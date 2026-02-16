@@ -1,3 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import "tailwindcss";
+
+body {
+  background-color: #151719;
+  color: #e8eef2;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.bg-noise {
+  background-image: url('/nnnoise.svg');
+}
