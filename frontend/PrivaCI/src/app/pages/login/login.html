@@ -23,10 +23,15 @@
                 <div class="text-gray-400 text-[.8rem]">
                     > Loading modules... <span class="text-green-400 font-bold">[OK]</span><br>
                     > Establishing secure connection... <span class="text-green-400 font-bold">[OK]</span><br>
-                    > Checking repo integrity... <span class="text-yellow-400 font-bold">[PENDING]</span><br>
-                    > <span class="text-red-400 font-bold">Access denied. Authentication required.</span>
+                    > Loading profile and repositories... <span class="text-yellow-400 font-bold">[PENDING]</span><br>
                 </div>
             </div>
+
+            @if (errorMessage) {
+                <div class="mb-6 p-3 border-l-2 border-red-500 bg-red-500/10 text-red-400 font-mono text-sm animate-pulse">
+                    <span class="font-bold">> SYSTEM_ERROR:</span> {{ formatError(errorMessage) }}
+                </div>
+            }
 
             <div class="mt-8 border-t border-gray-700 pt-6">
                 <h2 class="text-xl font-bold mb-4 text-white">Identify Yourself</h2>

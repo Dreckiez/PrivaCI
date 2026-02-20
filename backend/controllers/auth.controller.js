@@ -17,7 +17,7 @@ export const login = (req, res) => {
 export const githubCallback = async (req, res) => {
     const { code, state } = req.query;
 
-    if (!state || state !== req.session.oauthState) return res.status(403).send("Invalid state");
+    if (!state || state !== req.session.oauthState) return res.redirect(`${config.CLIENT_URL}/login?error=invalid_state`);
 
     delete req.session.oauthState;
 
@@ -42,13 +42,13 @@ export const githubCallback = async (req, res) => {
         }
 
         // Get User Details
-        const { userResponse } = await axios.get("https://api.github.com/user", {
+        const userResponse = await axios.get("https://api.github.com/user", {
             headers: { Authorization: `Bearer ${accessToken}` },
         });
 
-        const githubID = userResponse.id;
-        const username = userResponse.login;
-        const avatar = userResponse.avatar_url;
+        const githubID = userResponse.data.id;
+        const username = userResponse.data.login;
+        const avatar = userResponse.data.avatar_url;
 
         req.session.regenerate(() => {
             req.session.user = {
@@ -66,3 +66,9 @@ export const githubCallback = async (req, res) => {
         res.redirect(`${config.CLIENT_URL}/login?error=auth_failed`);
     }
 };
+
+export const userInfo = async (req, res) => {
+    if (!req.session.user) return res.status(401).json({authenticated: false});
+
+    return res.status(200).json({authenticated: true, user: req.session.user});
+}

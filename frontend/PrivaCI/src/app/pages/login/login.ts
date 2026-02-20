@@ -1,6 +1,8 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TerminalWindow } from '../../components/terminal-window/terminal-window';
+import { AuthService } from '../../services/auth.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -12,21 +14,37 @@ import { TerminalWindow } from '../../components/terminal-window/terminal-window
 export class Login {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private authService = inject(AuthService);
 
-  ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      
-      const token = params['token'];
-      const username = params['username'];
+  errorMessage: string | null = null;
 
-      if (token) {
-        
-        localStorage.setItem('auth_token', token);
-        if (username) localStorage.setItem('username', username);
+  async ngOnInit() {
+    const error = this.route.snapshot.queryParamMap.get('error');
 
-        this.router.navigate(['/dashboard'], { replaceUrl: true });
-      }
-    });
+    if (error) {
+      this.errorMessage = error;
+
+      await this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true
+      });
+    }
+
+    await this.authService.loadUser();
+
+    if (this.authService.authenticated) this.router.navigate(['/dashboard']);
+  }
+
+  formatError(code: string): string {
+    const errorMap: Record<string, string> = {
+      'invalid_state': 'Security validation failed. Please try logging in again.',
+      'access_denied': 'GitHub authorization was denied.',
+      'invalid_token': 'Failed to retrieve access token from GitHub.',
+      'auth_failed': 'Authentication process failed. Please try again.'
+    };
+    
+    return errorMap[code] || 'An unknown authentication error occurred.';
   }
 
   login() {
