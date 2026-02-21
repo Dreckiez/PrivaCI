@@ -1,0 +1,36 @@
+<div class="bg-[#1e2124] border border-[#2f3136] rounded shadow-xl overflow-hidden group hover:border-gray-500 transition-colors">
+                
+    <div class="bg-[#1a1c1e] px-4 py-3 border-b border-[#2f3136] flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <span class="px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider rounded border"
+                    [class.bg-red-500/10]="log.severity === 'Critical'" [class.text-red-400]="log.severity === 'Critical'" [class.border-red-500/30]="log.severity === 'Critical'"
+                    [class.bg-yellow-500/10]="log.severity === 'Warning'" [class.text-yellow-400]="log.severity === 'Warning'" [class.border-yellow-500/30]="log.severity === 'Warning'">
+                {{ log.type }}
+            </span>
+            <span class="text-sm text-blue-300 font-bold">{{ log.file }}</span>
+            <span class="text-xs text-gray-500">line: <span class="text-gray-300">{{ log.line }}</span></span>
+        </div>
+        
+        <div class="text-xs text-gray-400">
+            {{ log.description }}
+        </div>
+    </div>
+
+    <div class="p-4 bg-[#0d0e10] relative overflow-x-auto">
+        <div class="absolute top-0 left-0 w-1 h-full" 
+                [class.bg-red-500]="log.severity === 'Critical'"
+                [class.bg-yellow-400]="log.severity === 'Warning'"></div>
+        
+        <pre class="text-xs md:text-sm font-mono leading-relaxed text-gray-300"><code>{{ log.snippet }}</code></pre>
+    </div>
+
+    <div class="px-4 py-2 border-t border-[#2f3136] bg-[#1a1c1e] flex justify-end gap-3">
+        <button class="text-xs px-3 py-1 text-gray-400 hover:text-white hover:bg-[#2f3136] rounded transition-colors border border-transparent">
+            [ Ignore_Warning ]
+        </button>
+        <button class="text-xs px-3 py-1 bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-black border border-green-500/30 rounded transition-all">
+            [ Generate_Fix ]
+        </button>
+    </div>
+
+</div>
