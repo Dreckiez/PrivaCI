@@ -20,7 +20,13 @@ export const routes: Routes = [
         canActivate: [authGuard]
     },
     {
+        path: 'repo',
+        loadComponent: () => import('./pages/repo/repo').then(m => m.Repo),
+        canActivate: [authGuard]
+    },
+    {
         path: 'repo/:id',
-        component: RepoDetails
+        loadComponent: () => import('./pages/repo-details/repo-details').then(m => m.RepoDetails),
+        canActivate: [authGuard]
     }
 ];
