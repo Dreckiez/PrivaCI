@@ -1,46 +1,50 @@
-<div class="h-full flex flex-col bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800">
-  
-    <div class="h-16 flex items-center justify-center px-6 border-b border-gray-100 dark:border-slate-800">
-        <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-        <span class="ml-3 mr-5 text-xl font-bold text-gray-900 dark:text-white tracking-tight">PrivaCI</span>
-    </div>
-
-    <nav class="flex-1 px-4 py-6 space-y-2">
-        
-        <a routerLink="/dashboard" 
-        routerLinkActive="bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400"
-        class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors group">
-        
-            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-            <span class="font-medium">Overview</span>
-        </a>
-
-        <a routerLink="/repos" 
-        routerLinkActive="bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400"
-        class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors group">
-        
-            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-            </svg>
-            <span class="font-medium">Repositories</span>
-        </a>
-
-    </nav>
-
-    <div class="p-4 border-t border-gray-200 dark:border-slate-800">
-        <div class="flex items-center">
-        <div class="w-8 h-8 rounded-full bg-linear-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
-            US
+<nav class="w-64 h-screen bg-[#151719] border-r border-[#2f3136] font-mono text-sm flex flex-col shadow-2xl">
+    
+    <div class="bg-[#1e2124] px-4 py-3 border-b border-[#2f3136] flex flex-col gap-3 select-none">
+        <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+            <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+            <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
         </div>
-        <div class="ml-3">
-            <p class="text-sm font-medium text-gray-900 dark:text-white">User Name</p>
-            <p class="text-xs text-gray-500">Free Tier</p>
-        </div>
+        <div class="text-white font-bold tracking-wider text-xs">
+            <span class="text-blue-400">root@</span>PrivaCI: <span class="text-blue-400">~</span>$
         </div>
     </div>
 
-</div>
+    <div class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+        <div class="text-xs text-gray-500 mb-4">// System_Modules</div>
+        
+        <a href="/dashboard" class="block p-2 rounded bg-green-500/10 border border-green-500/30 text-green-400 shadow-[inset_0_0_10px_rgba(39,201,63,0.1)]">
+            <span class="mr-2 animate-pulse">➜</span> ./overview.sh
+        </a>
+
+        <a href="/repositories" class="block p-2 text-gray-400 hover:text-white hover:bg-[#2f3136] rounded transition-colors group">
+            <span class="mr-2 opacity-0 group-hover:opacity-100 group-hover:text-blue-400 transition-opacity">➜</span> cd /repositories
+        </a>
+        
+        <a href="/settings" class="block p-2 text-gray-400 hover:text-white hover:bg-[#2f3136] rounded transition-colors group">
+            <span class="mr-2 opacity-0 group-hover:opacity-100 group-hover:text-blue-400 transition-opacity">➜</span> nano config.yml
+        </a>
+    </div>
+
+    <div class="p-4 border-t border-[#2f3136] bg-[#1e2124]">
+        <div class="flex items-center ml-6 gap-4.5 mb-4">
+            <div class="w-8 h-8 rounded bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold border border-blue-500/50">
+                @if (authService.user?.avatar) {
+                    <img [src]="authService.user.avatar" alt="GitHub Avatar" 
+                        class="w-8 h-8 rounded border border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.2)]">
+                } @else {
+                    {{ authService.user?.username?.slice(0,1) }}
+                }
+            </div>
+            <div>
+                <div class="text-gray-200 font-bold">{{ authService.user?.username }}</div>
+                <div class="text-xs text-emerald-400">status: online</div>
+            </div>
+        </div>
+
+        <button (click)="logout()" class="w-full text-left p-2 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded border border-transparent hover:border-red-400/30 transition-colors flex items-center group cursor-pointer">
+             <span class="mr-2 ml-3.5 text-red-500 group-hover:animate-pulse">></span> exit --force
+        </button>
+    </div>
+</nav>

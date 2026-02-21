@@ -27,4 +27,19 @@ export class AuthService {
             this.authenticated = false;
         }
     }
+
+    async logout() {
+        try {
+            await firstValueFrom(
+                this.http.post('http://localhost:3000/api/auth/logout', {}, {
+                    withCredentials: true
+                })
+            )
+
+            this.user = null;
+            this.authenticated = false;
+        } catch (error) {
+            
+        }
+    }
 }

@@ -13,6 +13,15 @@ export const login = (req, res) => {
     res.redirect(url);
 };
 
+export const logout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) return res.status(500).json({ success: false });
+
+        res.clearCookie('sid');
+        res.json({success: true});
+    });
+}
+
 // 2. Handle the Callback
 export const githubCallback = async (req, res) => {
     const { code, state } = req.query;

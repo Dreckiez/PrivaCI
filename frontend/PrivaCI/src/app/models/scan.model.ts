@@ -3,9 +3,9 @@ export type ScanStatus = 'SAFE' | 'WARNING' | 'CRITICAL';
 export interface ScanResult {
     id: string;
     repoName: string;
+    commitHash: string;
     timestamp: Date;
     status: ScanStatus;
-    piiDetected: number;
-    secretsFound: number;
-    commitHash: string;
+    piiCount: number;
+    keysCount: number;
 }

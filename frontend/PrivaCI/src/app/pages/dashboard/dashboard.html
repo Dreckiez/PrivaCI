@@ -1,112 +1,69 @@
-<div class="space-y-6">
-    <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p class="text-gray-500 dark:text-gray-400">Real-time overview of your repository privacy status.</p>
+<div class="flex-1 bg-[#151719] h-screen overflow-y-auto p-8 font-mono text-gray-300">
+
+    <div class="mb-8 border-b border-[#2f3136] pb-4">
+        <h1 class="text-2xl font-bold text-white mb-2 flex items-center">
+            <span class="text-green-400 mr-3">➜</span> 
+            <span class="text-blue-400 mr-2">~</span> 
+            ./privaci_status --overview
+        </h1>
+        <p class="text-gray-500 text-sm pl-8">// Real-time overview of your repository privacy status.</p>
     </div>
 
-    @if (stats$ | async; as stats) {
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
-                <div class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Total Scans</div>
-                <div class="mt-2 flex items-baseline">
-                    <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.total }}</span>
-                    <span class="ml-2 text-sm text-green-600 font-medium">+2 today</span>
-                </div>
+        <div class="border border-[#2f3136] bg-[#1e2124] p-5 rounded shadow-inner hover:border-gray-500 transition-colors">
+            <div class="text-xs text-gray-500 mb-2 uppercase tracking-wider">
+                <span class="text-blue-400">></span> [ Total_Scans ]
             </div>
-
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
-                <div class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Critical Leaks</div>
-                <div class="mt-2 flex items-baseline">
-                    <span class="text-3xl font-bold" 
-                            [class.text-red-500]="stats.critical > 0"
-                            [class.text-gray-900]="stats.critical === 0">
-                        {{ stats.critical }}
-                    </span>
-                    <span class="ml-2 text-sm text-gray-500">requiring action</span>
-                </div>
+            <div class="text-4xl text-gray-200 font-bold flex items-baseline gap-2">
+                {{ (stats$ | async)?.total }} <span class="text-sm text-green-400 font-normal tracking-wide">+2 today</span>
             </div>
-
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
-                <div class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Safe Repos</div>
-                <div class="mt-2 flex items-baseline">
-                    <span class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.safe }}</span>
-                </div>
-            </div>
-
-        </div>
-    }
-
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Scans</h2>
-            <button class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">View all</button>
         </div>
 
-        <table class="w-full text-left text-sm text-gray-600 dark:text-gray-400">
-            <thead class="bg-gray-50 dark:bg-slate-900/50 text-xs uppercase font-semibold">
-                <tr>
-                    <th class="px-6 py-3">Repository</th>
-                    <th class="px-6 py-3">Status</th>
-                    <th class="px-6 py-3">Issues Found</th>
-                    <th class="px-6 py-3">Time</th>
-                    <th class="px-6 py-3"></th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
-                
-                @for (scan of scans$ | async; track scan.id) {
-                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                            {{ scan.repoName }}
-                            <div class="text-xs text-gray-500 font-normal">Commit: {{ scan.commitHash }}</div>
-                        </td>
+        <div class="border border-red-500/30 bg-red-500/5 p-5 rounded shadow-[inset_0_0_15px_rgba(239,68,68,0.1)] relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-1 h-full bg-red-500 animate-pulse"></div>
+            <div class="text-xs text-red-400/70 mb-2 uppercase tracking-wider">
+                <span class="text-red-500">></span> [ Critical_Leaks ]
+            </div>
+            <div class="text-4xl text-red-500 font-bold flex items-baseline gap-2">
+                {{ (stats$ | async)?.critical }} <span class="text-sm text-red-400 font-normal tracking-wide">requires_action</span>
+            </div>
+        </div>
 
-                        <td class="px-6 py-4">
-                            @if (scan.status === 'SAFE') {
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                <span class="w-1.5 h-1.5 mr-1.5 bg-green-500 rounded-full"></span> Safe
-                                </span>
-                            } @else if (scan.status === 'CRITICAL') {
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                                <span class="w-1.5 h-1.5 mr-1.5 bg-red-500 rounded-full"></span> Critical
-                                </span>
-                            }
-                        </td>
+        <div class="border border-green-500/30 bg-green-500/5 p-5 rounded shadow-[inset_0_0_15px_rgba(34,197,94,0.1)]">
+            <div class="text-xs text-green-400/70 mb-2 uppercase tracking-wider">
+                <span class="text-green-500">></span> [ Safe_Repos ]
+            </div>
+            <div class="text-4xl text-green-400 font-bold flex items-baseline gap-2">
+                {{ (stats$ | async)?.safe }} <span class="text-sm text-green-500/70 font-normal tracking-wide">verified</span>
+            </div>
+        </div>
+    </div>
 
-                        <td class="px-6 py-4">
-                            <div class="flex items-center space-x-4">
-                                <div class="flex items-center" title="PII Leaks">
-                                    <svg class="w-4 h-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    {{ scan.piiDetected }}
-                                </div>
-                                <div class="flex items-center" title="Secrets Found">
-                                    <svg class="w-4 h-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                    </svg>
-                                    <span [class.text-red-600]="scan.secretsFound > 0" [class.font-bold]="scan.secretsFound > 0">
-                                        {{ scan.secretsFound }}
-                                    </span>
-                                </div>
-                            </div>
-                        </td>
+    <div class="mb-4 flex justify-between items-end pl-2">
+        <h2 class="text-lg text-white font-bold flex items-center">
+            <span class="text-yellow-400 mr-2">cat</span> /var/log/recent_scans.log
+        </h2>
+        <a href="/repositories" class="text-xs text-blue-400 hover:text-blue-300 hover:underline tracking-wider uppercase">
+            [ View_All ]
+        </a>
+    </div>
+    
+    <div class="bg-[#1e2124] border border-[#2f3136] rounded overflow-hidden text-sm shadow-2xl">
+        <div class="grid grid-cols-12 gap-4 p-4 border-b border-[#2f3136] text-gray-500 text-xs uppercase tracking-wider bg-[#1a1c1e] font-bold">
+            <div class="col-span-4 pl-2">TARGET_REPO</div>
+            <div class="col-span-2">STATUS</div>
+            <div class="col-span-3">VULNERABILITIES</div>
+            <div class="col-span-2">TIMESTAMP</div>
+            <div class="col-span-1 text-right pr-2">ACTION</div>
+        </div>
 
-                        <td class="px-6 py-4 text-gray-500">
-                            {{ scan.timestamp | date:'shortTime' }}
-                        </td>
-
-                        <td class="px-6 py-4 text-right">
-                            <a [routerLink]="['/repo', scan.id]" class="text-gray-400 hover:text-indigo-600">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        @for (scan of scans$ | async; track scan.id) {
+            <app-scan-entry [scan]="scan" class="block"></app-scan-entry>
+        } @empty {
+            <div class="p-8 text-center text-gray-500 font-mono text-xs">
+                > No_scan_logs_found_in_directory.
+            </div>
+        }
     </div>
 </div>

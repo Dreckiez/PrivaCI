@@ -1,0 +1,58 @@
+<a [routerLink]="['/repo', scan.id]" class="grid grid-cols-12 gap-4 p-4 border-b border-[#2f3136] hover:bg-[#2f3136]/60 transition-colors items-center group cursor-pointer">
+    <div class="col-span-4 pl-2">
+        <div class="font-bold transition-colors"
+            [class.text-blue-300]="scan.status === 'SAFE' || scan.status === 'WARNING'"
+            [class.group-hover:text-blue-400]="scan.status === 'SAFE'"
+            [class.group-hover:text-yellow-300]="scan.status === 'WARNING'"
+            [class.text-white]="scan.status === 'CRITICAL'"
+            [class.group-hover:text-red-300]="scan.status === 'CRITICAL'"
+        >
+            {{ scan.repoName }}
+        </div>
+        <div class="text-xs text-gray-500 mt-1">commit: <span class="text-gray-400">{{ scan.commitHash }}</span></div>
+    </div>
+    <div class="col-span-2 flex items-center">
+        @switch (scan.status) {
+            @case ('SAFE') {
+                <span class="px-2 py-1 rounded bg-green-500/10 text-green-400 border border-green-500/20 text-xs flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div> Safe
+                </span>
+            }
+            @case ('WARNING') {
+                <span class="px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 text-xs flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-yellow-400"></div> Warning
+                </span>
+            }
+            @case ('CRITICAL') {
+                <span class="px-2 py-1 rounded bg-red-500/10 text-red-400 border border-red-500/30 text-xs flex items-center gap-2 animate-pulse">
+                    <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div> Critical
+                </span>
+            }
+        }
+    </div>
+    <div class="col-span-3 text-gray-400 flex gap-4 text-xs">
+        <span class="px-2 py-1 rounded border"
+            [class.bg-[#151719]]="scan.piiCount === 0" [class.border-[#2f3136]]="scan.piiCount === 0"
+              [class.bg-red-500/10]="scan.piiCount > 0 && scan.status === 'CRITICAL'" [class.border-red-500/20]="scan.piiCount > 0 && scan.status === 'CRITICAL'"
+              [class.bg-yellow-500/10]="scan.piiCount > 0 && scan.status === 'WARNING'" [class.border-yellow-500/20]="scan.piiCount > 0 && scan.status === 'WARNING'"
+        >
+            PII: <span [class.text-red-400]="scan.piiCount > 0 && scan.status === 'CRITICAL'" 
+                       [class.text-yellow-400]="scan.piiCount > 0 && scan.status === 'WARNING'" 
+                       [class.font-bold]="scan.piiCount > 0"
+                       [class.text-gray-200]="scan.piiCount === 0">{{ scan.piiCount }}</span>
+        </span>
+        <span class="px-2 py-1 rounded border"
+            [class.bg-[#151719]]="scan.keysCount === 0" [class.border-[#2f3136]]="scan.keysCount === 0"
+            [class.bg-red-500/10]="scan.keysCount > 0" [class.border-red-500/20]="scan.keysCount > 0"
+        >
+            KEYS: <span [class.text-red-400]="scan.keysCount > 0" [class.font-bold]="scan.keysCount > 0" [class.text-gray-200]="scan.keysCount === 0"
+                >{{ scan.keysCount }}</span>
+        </span>
+    </div>
+    <div class="col-span-2 text-gray-500 text-xs font-sans">{{ scan.timestamp | date:'MMM d, y, h:mm a' }}</div>
+    <div class="col-span-1 text-right text-gray-600 transition-colors pr-2"
+        [class.group-hover:text-green-400]="scan.status === 'SAFE'"
+        [class.group-hover:text-yellow-400]="scan.status === 'WARNING'"
+        [class.group-hover:text-red-500]="scan.status === 'CRITICAL'"
+    >➜</div>
+</a>

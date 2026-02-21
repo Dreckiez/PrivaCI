@@ -1,13 +1,14 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ScanService } from '../../services/scan.service';
+import { ScanEntry } from '../../components/scan-entry/scan-entry';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, DatePipe, RouterLink],
+  imports: [CommonModule, RouterLink, ScanEntry],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
