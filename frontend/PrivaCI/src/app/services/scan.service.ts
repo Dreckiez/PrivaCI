@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { ScanResult } from "../models/scan.model";
+import { ScanResult, ScanDetail } from "../models/scan.model";
 import { Observable, of } from "rxjs";
 
 @Injectable({
@@ -11,6 +11,7 @@ export class ScanService {
         {
             id: 'scan-001',
             repoName: 'frontend-dashboard',
+            branch: 'main',
             timestamp: new Date(),
             status: 'SAFE',
             piiCount: 0,
@@ -20,6 +21,7 @@ export class ScanService {
         {
             id: 'scan-002',
             repoName: 'backend-api',
+            branch: 'feature/apiTest',
             timestamp: new Date(Date.now() - 3600000),
             status: 'CRITICAL',
             piiCount: 5,
@@ -29,6 +31,7 @@ export class ScanService {
         {
             id: 'scan-003',
             repoName: 'auth-service',
+            branch: 'origin',
             timestamp: new Date(Date.now() - 7200000),
             status: 'WARNING',
             piiCount: 2,
@@ -37,7 +40,32 @@ export class ScanService {
         }
     ];
 
+    private mockDetail: ScanDetail[] = [
+        {
+            branch: 'main',
+            type: 'KEY',
+            file: 'src/config/aws-config.ts',
+            line: 14,
+            severity: 'CRITICAL',
+            description: 'Exposed AWS Secret Access Key detected.',
+            snippet: '13 | export const config = {\n14 |   secretAccessKey: "AKIAIOSFODNN7EXAMPLE",\n15 |   region: "us-east-1"\n16 | };'
+        },
+        {
+            branch: 'main',
+            type: 'PII',
+            file: 'src/controllers/user.controller.ts',
+            line: 42,
+            severity: 'WARNING',
+            description: 'Potential logging of plain-text email address.',
+            snippet: '41 | const user = await db.find({ id: req.body.id });\n42 | console.log("Login attempt for email: ", user.email);\n43 | return res.status(200);'
+        }
+    ];
+
     getRecentScans(): Observable<ScanResult[]> {
         return of(this.mockData);
+    }
+
+    getScanDetails(repoName: string, branch: string): Observable<ScanDetail[]> {
+        return of(this.mockDetail);
     }
 }
