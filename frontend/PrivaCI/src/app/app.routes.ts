@@ -28,5 +28,10 @@ export const routes: Routes = [
         path: 'repo/:id',
         loadComponent: () => import('./pages/repo-details/repo-details').then(m => m.RepoDetails),
         canActivate: [authGuard]
+    },
+    {
+        path: 'settings',
+        loadComponent: () => import('./pages/settings/settings').then(m => m.Settings),
+        canActivate: [authGuard]
     }
 ];
