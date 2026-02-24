@@ -3,6 +3,7 @@ import express from "express";
 import session from "express-session";
 import cors from "cors";
 import http from "http";
+import { pool } from "./libs/db.js";
 import authRoute from "./routes/auth.route.js";
 
 const app = express();
@@ -11,6 +12,8 @@ const server = http.createServer(app);
 
 app.use(cors({ origin: config.CLIENT_URL, credentials: true }));
 app.use(express.json());
+
+app.set("trust proxy", 1);
 
 app.use(session({
   name: "sid",
@@ -27,6 +30,19 @@ app.use(session({
 
 app.use("/api/auth", authRoute);
 
-server.listen(config.PORT, () => {
-  console.log(`Server running on port ${config.PORT} ...`);
-});
+async function startServer() {
+  try {
+    await pool.query('SELECT 1'); // triggers connection
+    console.log('🟢 DB ready');
+
+    server.listen(config.PORT, () => {
+      console.log(`Server running on port ${config.PORT} ...`);
+    });
+  } catch (err) {
+    console.error('🔴 DB connection failed:', err);
+    process.exit(1); // crash so Render/Vercel restarts
+  }
+}
+
+startServer();
+
