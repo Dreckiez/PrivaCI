@@ -16,6 +16,7 @@ CREATE TABLE repos (
   is_private BOOLEAN NOT NULL,
   main_language TEXT,
   is_tracked BOOLEAN DEFAULT FALSE,
+  github_updated_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
