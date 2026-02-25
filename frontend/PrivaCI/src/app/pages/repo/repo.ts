@@ -1,15 +1,9 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-
-interface Repository {
-  id: string;
-  name: string;
-  isPrivate: boolean;
-  language: string;
-  status: 'Safe' | 'Warning' | 'Critical' | 'Unscanned';
-  lastScanned: Date | null;
-}
+import { Repository } from '../../models/repo.model';
+import { BehaviorSubject, firstValueFrom, map, Observable, switchMap, tap } from 'rxjs';
+import { RepoService } from '../../services/repo.service';
 
 @Component({
   selector: 'app-repo',
@@ -18,11 +12,66 @@ interface Repository {
   styleUrl: './repo.css',
 })
 export class Repo {
-  repos: Repository[] = [
-    { id: 'frontend-dashboard', name: 'frontend-dashboard', isPrivate: true, language: 'TypeScript', status: 'Safe', lastScanned: new Date() },
-    { id: 'backend-api', name: 'backend-api', isPrivate: true, language: 'JavaScript', status: 'Critical', lastScanned: new Date(Date.now() - 86400000) },
-    { id: 'auth-service', name: 'auth-service', isPrivate: false, language: 'Go', status: 'Warning', lastScanned: new Date() },
-    { id: 'personal-blog', name: 'personal-blog', isPrivate: false, language: 'HTML', status: 'Unscanned', lastScanned: null },
-    { id: 'legacy-payment-gateway', name: 'legacy-payment-gateway', isPrivate: true, language: 'Java', status: 'Unscanned', lastScanned: null }
-  ];
+  private repoService = inject(RepoService);
+  private pageSubject = new BehaviorSubject<number>(1);
+
+  limit = 9;
+
+  totalPages = 1;
+  totalItems = 0;
+
+  repos$!: Observable<Repository[]>;
+
+  ngOnInit() {
+    this.repos$ = this.pageSubject.pipe(
+      switchMap(page =>
+        this.repoService.getRepos(page, this.limit)
+      ),
+      tap(response => {
+        this.totalItems = response.pagination.totalItems;
+        this.totalPages = response.pagination.totalPages;
+      }),
+      map(response =>
+        response.data.map(repo => ({
+          id: repo.id,
+          github_repo_id: repo.github_repo_id,
+          name: repo.name,
+          is_private: repo.is_private,
+          main_language: repo.main_language || 'Unknown',
+          status: repo.status ?? 'UNSCANNED',
+          lastScanned: repo.lastScanned
+            ? new Date(repo.lastScanned)
+            : null
+        }))
+      )
+    );
+  }
+
+  get currentPage() {
+    return this.pageSubject.value;
+  }
+
+  get startIndex() {
+    if (this.totalItems === 0) return 0;
+    return (this.currentPage - 1) * this.limit + 1;
+  }
+
+  get endIndex() {
+    return Math.min(this.currentPage * this.limit, this.totalItems);
+  }
+
+  // --- Actions ---
+  nextPage() {
+    const next = this.pageSubject.value + 1;
+    if (next <= this.totalPages) {
+      this.pageSubject.next(next);
+    }
+  }
+
+  prevPage() {
+    const prev = this.pageSubject.value - 1;
+    if (prev >= 1) {
+      this.pageSubject.next(prev);
+    }
+  }
 }

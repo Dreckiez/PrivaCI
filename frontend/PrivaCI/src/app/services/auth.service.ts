@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { firstValueFrom } from "rxjs";
+import { API_ENDPOINTS } from "../utils/url.util";
 
 @Injectable({ 
     providedIn: 'root'
@@ -15,7 +16,7 @@ export class AuthService {
     async loadUser() {
         try {
             const res: any = await firstValueFrom(
-                this.http.get('http://localhost:3000/api/auth/me', {
+                this.http.get(API_ENDPOINTS.auth.me, {
                     withCredentials: true
                 })
             );
@@ -31,7 +32,7 @@ export class AuthService {
     async logout() {
         try {
             await firstValueFrom(
-                this.http.post('http://localhost:3000/api/auth/logout', {}, {
+                this.http.post(API_ENDPOINTS.auth.logout, {}, {
                     withCredentials: true
                 })
             )

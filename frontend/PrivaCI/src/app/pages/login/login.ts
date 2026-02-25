@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TerminalWindow } from '../../components/terminal-window/terminal-window';
 import { AuthService } from '../../services/auth.service';
-import { firstValueFrom } from 'rxjs';
+import { API_ENDPOINTS } from '../../utils/url.util';
 
 @Component({
   selector: 'app-login',
@@ -48,6 +48,6 @@ export class Login {
   }
 
   login() {
-    window.location.href = 'http://localhost:3000/api/auth/login';
+    window.location.href = API_ENDPOINTS.auth.login;
   }
 }

@@ -1,5 +1,5 @@
 import express from "express";
-import { getRepos } from "../controllers/repo.controller";
+import { getRepos } from "../controllers/repo.controller.js";
 
 const router = express.Router();
 
