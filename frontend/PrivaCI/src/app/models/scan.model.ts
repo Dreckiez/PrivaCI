@@ -1,4 +1,4 @@
-export type ScanStatus = 'SAFE' | 'WARNING' | 'CRITICAL';
+export type ScanStatus = 'SAFE' | 'WARNING' | 'CRITICAL' | 'UNSCANNED';
 
 export interface ScanResult {
     id: string;

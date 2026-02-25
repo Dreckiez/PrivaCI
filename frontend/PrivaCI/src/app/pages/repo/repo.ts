@@ -38,10 +38,8 @@ export class Repo {
           name: repo.name,
           is_private: repo.is_private,
           main_language: repo.main_language || 'Unknown',
-          status: repo.status ?? 'UNSCANNED',
-          lastScanned: repo.lastScanned
-            ? new Date(repo.lastScanned)
-            : null
+          scan_status: repo.scan_status ?? "UNSCANNED",
+          last_scanned_at: repo.last_scanned_at ? new Date(repo.last_scanned_at) : null
         }))
       )
     );

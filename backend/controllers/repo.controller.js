@@ -22,17 +22,26 @@ export const getRepos = async (req, res) => {
 
         const reposResult = await pool.query(`
             SELECT 
-                id, 
-                github_repo_id, 
-                name, 
-                owner, 
-                is_private, 
-                main_language, 
-                is_tracked, 
-                created_at
-            FROM repos 
-            WHERE user_id = $1 
-            ORDER BY github_updated_at DESC
+                r.id, 
+                r.github_repo_id, 
+                r.name, 
+                r.owner, 
+                r.is_private, 
+                r.main_language, 
+                r.is_tracked, 
+                r.created_at,
+                s.status AS scan_status,
+                s.scanned_at AS last_scanned_at
+            FROM repos r
+            LEFT JOIN LATERAL (
+                SELECT status, scanned_at 
+                FROM scans 
+                WHERE repo_id = r.id 
+                ORDER BY scanned_at DESC 
+                LIMIT 1
+            ) s ON true
+            WHERE r.user_id = $1 
+            ORDER BY r.github_updated_at DESC
             LIMIT $2 OFFSET $3
         `, [userId, limit, offset]);
 

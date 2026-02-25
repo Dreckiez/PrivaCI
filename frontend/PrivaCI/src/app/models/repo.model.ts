@@ -1,11 +1,13 @@
+import { ScanStatus } from "./scan.model";
+
 export interface Repository {
   id: string;
   github_repo_id: string;
   name: string;
   is_private: boolean;
   main_language: string;
-  status: 'Safe' | 'Warning' | 'Critical' | 'Unscanned';
-  lastScanned: Date | null;
+  scan_status: ScanStatus;
+  last_scanned_at: Date | null;
 }
 
 export interface PaginatedReposResponse {
