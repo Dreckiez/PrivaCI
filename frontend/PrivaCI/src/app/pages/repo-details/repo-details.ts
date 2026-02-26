@@ -1,11 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map, switchMap } from 'rxjs/operators';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ScanService } from '../../services/scan.service';
 import { ScanLog } from '../../components/scan-log/scan-log';
 import { BranchSelector } from '../../components/branch-selector/branch-selector';
-import { combineLatest } from 'rxjs';
+import { combineLatest, firstValueFrom } from 'rxjs';
+import { RepoDetailsData } from '../../models/repo.model';
+import { RepoService } from '../../services/repo.service';
 
 @Component({
   selector: 'app-repo-details',
@@ -16,25 +17,41 @@ import { combineLatest } from 'rxjs';
 export class RepoDetails {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private scanService = inject(ScanService);
+  private repoService = inject(RepoService);
 
-  repoStatus = 'Critical';
-  commitHash = 'f9e8d7c';
-  lastScanned = new Date();
+  private cdr = inject(ChangeDetectorRef);
 
-  repoName$ = this.route.paramMap.pipe(
-    map(params => params.get('id') || '')
-  );
+  data: RepoDetailsData | null = null;
+  isLoading = true;
+  
+  ngOnInit() {
+    combineLatest([
+      this.route.paramMap,
+      this.route.queryParamMap
+    ]).subscribe(([params, queryParams]) => {
+      const id = params.get('id');
+      const branch = queryParams.get('branch') || 'main';
 
-  branch$ = this.route.queryParamMap.pipe(
-    map(params => params.get('branch') || 'main')
-  );
+      if (id) this.fetchRepoDetails(id, branch);
+    })
+  }
 
-  logs$ = combineLatest([this.repoName$, this.branch$]).pipe(
-    switchMap(([repoName, branch]) => this.scanService.getScanDetails(repoName, branch))
-  );
+  async fetchRepoDetails(id: string, branch: string) {
+    this.isLoading = true;
+    this.cdr.detectChanges();
+    try {
+      const response = await firstValueFrom(
+        this.repoService.getRepoDetail(id, branch)
+      );
 
-  branches: string[] = ['main', 'develop', 'feature/oauth-secrets', 'legacy-v1'];
+      this.data = response.data;
+    } catch (error) {
+      
+    } finally {
+      this.isLoading = false;
+      this.cdr.detectChanges(); // THE FIX: Force Angular to redraw the screen!
+    }
+  }
 
   onBranchChange(branchName: string) {
     this.router.navigate([], {

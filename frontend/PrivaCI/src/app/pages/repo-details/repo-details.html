@@ -6,69 +6,99 @@
         </a>
     </div>
 
-    <div class="mb-8 border-b border-[#2f3136] pb-6 flex justify-between items-end">
-        <div>
-            <h1 class="text-2xl font-bold text-white flex items-center">
-                <span class="text-green-400 mr-3">➜</span> 
-                <span class="text-blue-400 mr-2">~</span> 
-                ./privaci_inspect --target=<span class="text-purple-400 ml-1">{{ repoName$ | async }}</span>
-            </h1>
-            </div>
-
-        <div class="px-4 py-2 border border-red-500/30 bg-red-500/10 text-red-400 rounded flex items-center gap-3 shadow-[inset_0_0_15px_rgba(239,68,68,0.1)]">
-            <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-            <span class="font-bold tracking-wider uppercase">Overall: {{ repoStatus }}</span>
+    @if (isLoading) {
+        <div class="flex items-center justify-center h-64 text-gray-500 font-mono text-sm animate-pulse">
+            > Establishing secure connection to GitHub...
         </div>
-    </div>
-
-    <div class="mb-6 flex flex-col gap-4 bg-[#1a1c1e] p-4 border border-[#2f3136] rounded shadow-inner">
-        
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <app-branch-selector
-                    [branches]="branches"
-                    [selectedBranch]="(branch$ | async) ?? 'main'"
-                    (branchChange)="onBranchChange($event)">
-                </app-branch-selector>
-                
-                <span class="text-xs font-bold px-2 py-1 rounded border border-green-500/30 bg-green-500/10 text-green-400 uppercase tracking-wider">
-                    Branch: SAFE
+    } @else if (data) {
+        <div class="mb-8 border-b border-[#2f3136] pb-6 flex justify-between items-end">
+            <div>
+                <h1 class="text-2xl font-bold text-white flex items-center">
+                    <span class="text-green-400 mr-3">➜</span> 
+                    <span class="text-blue-400 mr-2">~</span> 
+                    ./privaci_inspect --target=<span class="text-purple-400 ml-1">{{ data.repoName }}</span>
+                </h1>
+                </div>
+    
+            <div class="px-4 py-2 border rounded flex items-center gap-3 shadow-[inset_0_0_15px_rgba(0,0,0,0.1)] transition-colors"
+                 [class.border-green-500/50]="data.overallStatus === 'SAFE'" [class.bg-green-500/10]="data.overallStatus === 'SAFE'" [class.text-green-400]="data.overallStatus === 'SAFE'"
+                 [class.border-yellow-400/50]="data.overallStatus === 'WARNING'" [class.bg-yellow-400/10]="data.overallStatus === 'WARNING'" [class.text-yellow-400]="data.overallStatus === 'WARNING'"
+                 [class.border-red-500/50]="data.overallStatus === 'CRITICAL'" [class.bg-red-500/10]="data.overallStatus === 'CRITICAL'" [class.text-red-400]="data.overallStatus === 'CRITICAL'"
+                 [class.border-gray-500/50]="data.overallStatus === 'UNSCANNED'" [class.bg-gray-500/10]="data.overallStatus === 'UNSCANNED'" [class.text-gray-400]="data.overallStatus === 'UNSCANNED'">
+                <div class="w-2 h-2 rounded-full animate-pulse"
+                     [class.bg-green-500]="data.overallStatus === 'SAFE'"
+                     [class.bg-yellow-400]="data.overallStatus === 'WARNING'"
+                     [class.bg-red-500]="data.overallStatus === 'CRITICAL'"
+                     [class.bg-gray-500]="data.overallStatus === 'UNSCANNED'"></div>
+                <span class="font-bold tracking-wider uppercase">Overall: {{ data.overallStatus }}</span>
+            </div>
+        </div>
+    
+        <div class="mb-6 flex flex-col gap-4 bg-[#1a1c1e] p-4 border border-[#2f3136] rounded shadow-inner">
+            
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <app-branch-selector
+                        [branches]="data.branches"
+                        [selectedBranch]="data.selectedBranch"
+                        (branchChange)="onBranchChange($event)">
+                    </app-branch-selector>
+                    
+                    <span class="text-xs font-bold px-2 py-1 rounded border uppercase tracking-wider"
+                          [class.border-green-500/30]="data.branchStatus === 'SAFE'" [class.bg-green-500/10]="data.branchStatus === 'SAFE'" [class.text-green-400]="data.branchStatus === 'SAFE'"
+                          [class.border-yellow-400/30]="data.branchStatus === 'WARNING'" [class.bg-yellow-400/10]="data.branchStatus === 'WARNING'" [class.text-yellow-400]="data.branchStatus === 'WARNING'"
+                          [class.border-red-500/30]="data.branchStatus === 'CRITICAL'" [class.bg-red-500/10]="data.branchStatus === 'CRITICAL'" [class.text-red-400]="data.branchStatus === 'CRITICAL'"
+                          [class.border-gray-500/30]="data.branchStatus === 'UNSCANNED'" [class.bg-gray-500/10]="data.branchStatus === 'UNSCANNED'" [class.text-gray-400]="data.branchStatus === 'UNSCANNED'">
+                        Branch: {{ data.branchStatus }}
+                    </span>
+                </div>
+    
+                @if (data.overallStatus === 'UNSCANNED') {
+                    <button class="flex items-center gap-2 px-4 py-2 border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500 rounded transition-all font-bold tracking-wider text-sm uppercase group cursor-pointer shadow-[0_0_10px_rgba(59,130,246,0.1)] hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                        <svg class="w-4 h-4 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        [ Scan_All_Branches ]
+                    </button>
+                } @else {
+                    <button class="flex items-center gap-2 px-4 py-2 border border-gray-500/30 bg-gray-500/10 text-gray-400 hover:bg-gray-400 hover:text-black hover:border-gray-400 rounded transition-all font-bold tracking-wider text-sm uppercase group cursor-pointer">
+                        <svg class="w-4 h-4 group-hover:animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        [ Scan_Current_Branch ]
+                    </button>
+                }
+            </div>
+    
+            <div class="flex items-center gap-6 text-xs text-gray-500 border-t border-[#2f3136] pt-3 mt-1">
+                <span class="flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                    commit: <span class="text-gray-400">{{ data.currentScan?.commitHash || '--' }}</span>
+                </span>
+                <span class="flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    scanned: <span class="text-gray-400">{{ data.currentScan?.scannedAt ? (data.currentScan?.scannedAt | date:'MMM d, y, h:mm a') : '--' }}</span>
                 </span>
             </div>
-
-            <button class="flex items-center gap-2 px-4 py-2 border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-black rounded transition-all font-bold tracking-wider text-sm uppercase group cursor-pointer">
-                <svg class="w-4 h-4 group-hover:animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                [ Scan_Current_Branch ]
-            </button>
+    
         </div>
-
-        <div class="flex items-center gap-6 text-xs text-gray-500 border-t border-[#2f3136] pt-3 mt-1">
-            <span class="flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
-                commit: <span class="text-gray-400">{{ commitHash }}</span>
-            </span>
-            <span class="flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                scanned: <span class="text-gray-400">{{ lastScanned | date:'MMM d, y, h:mm a' }}</span>
-            </span>
+    
+        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-[#2f3136] pb-2 flex items-center">
+            <span class="text-yellow-400 mr-2">cat</span> /var/log/inspect_results.log
+        </h2>
+    
+        <div class="space-y-6">
+            @if (data.currentScan) {
+                @for (log of data.currentScan.findings; track log.file + log.line) {
+                    <app-scan-log [log]="log" class="block"></app-scan-log>
+                } @empty {
+                    <div class="p-8 border border-green-500/30 bg-green-500/5 rounded text-center text-green-400 font-mono text-sm shadow-[inset_0_0_15px_rgba(34,197,94,0.1)]">
+                        > System_Check: No vulnerabilities found in this branch. [VERIFIED]
+                    </div>
+                }
+            } @else {
+                <div class="p-8 border border-gray-500/30 bg-gray-500/5 rounded text-center text-gray-400 font-mono text-sm shadow-[inset_0_0_15px_rgba(107,114,128,0.1)]">
+                    > System_Check: Branch '{{ data.selectedBranch }}' has not been scanned yet. Click the button above to initialize.
+                </div>
+            }
         </div>
+    }
 
-    </div>
-
-    <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-[#2f3136] pb-2 flex items-center">
-        <span class="text-yellow-400 mr-2">cat</span> /var/log/inspect_results.log
-    </h2>
-
-    <div class="space-y-6">
-        @for (log of logs$ | async; track log.file + log.line) {
-            
-            <app-scan-log [log]="log" class="block"></app-scan-log>
-
-        } @empty {
-            <div class="p-8 border border-green-500/30 bg-green-500/5 rounded text-center text-green-400 font-mono text-sm shadow-[inset_0_0_15px_rgba(34,197,94,0.1)]">
-                > System_Check: No vulnerabilities found in this repository. [VERIFIED]
-            </div>
-        }
-    </div>
 
 </div>

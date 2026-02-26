@@ -1,4 +1,4 @@
-import { ScanStatus } from "./scan.model";
+import { ScanStatus, CurrentScan } from "./scan.model";
 
 export interface Repository {
   id: string;
@@ -17,4 +17,18 @@ export interface PaginatedReposResponse {
     totalPages: number;
     currentPage: number;
   };
+}
+
+export interface RepoDetailsData {
+  repoName: string;
+  overallStatus: ScanStatus;
+  branches: string[];
+  selectedBranch: string;
+  branchStatus: ScanStatus;
+  currentScan: CurrentScan | null;
+}
+
+export interface RepoDetailsResponse {
+  success: boolean;
+  data: RepoDetailsData;
 }

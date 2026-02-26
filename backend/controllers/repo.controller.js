@@ -1,4 +1,5 @@
 import { pool } from "../libs/db.js";
+import axios from "axios";
 import { decryptToken } from "../utils/auth.util.js";
 
 export const getRepos = async (req, res) => {
@@ -87,6 +88,7 @@ export const getRepoDetail = async (req, res) => {
             });
             branches = ghBranchesRes.data.map(b => b.name);
         } catch (ghErr) {
+            console.error("GitHub API Error (Branches):", ghErr.message);
             // Only fallback to DB history if GitHub is completely down
             const fallbackRes = await pool.query(`SELECT DISTINCT branch FROM scans WHERE repo_id = $1`, [repo.id]);
             branches = fallbackRes.rowCount > 0 ? fallbackRes.rows.map(r => r.branch) : ['main'];

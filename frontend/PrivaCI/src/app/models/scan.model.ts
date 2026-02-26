@@ -13,12 +13,17 @@ export interface ScanResult {
 
 export type SecretType = 'KEY' | 'PII';
 
-export interface ScanDetail {
-    branch: string;
-    type: SecretType;
-    file: string;
-    line: number;
-    severity: ScanStatus;
-    description: string;
-    snippet: string;
+export interface ScanFinding {
+  type: SecretType;
+  file: string;
+  line: number;
+  severity: 'WARNING' | 'CRITICAL';
+  description: string;
+  snippet: string;
+}
+
+export interface CurrentScan {
+  commitHash: string;
+  scannedAt: string;
+  findings: ScanFinding[];
 }
