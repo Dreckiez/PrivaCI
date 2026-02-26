@@ -6,6 +6,7 @@ import http from "http";
 import { pool } from "./libs/db.js";
 import authRoute from "./routes/auth.route.js";
 import repoRoute from "./routes/repo.route.js";
+import { requireAuth } from "./middlewares/auth.middleware.js";
 
 const app = express();
 
@@ -30,6 +31,9 @@ app.use(session({
 }));
 
 app.use("/api/auth", authRoute);
+
+app.use(requireAuth);
+
 app.use("/api/repo", repoRoute);
 
 async function startServer() {
