@@ -11,13 +11,19 @@ export class RepoService {
     private http = inject(HttpClient);
 
     getRepos(page: number, limit: number): Observable<PaginatedReposResponse> {
-        return this.http.get<any>(`${API_ENDPOINTS.repo.getAll}?page=${page}&limit=${limit}`, {
+        return this.http.get<PaginatedReposResponse>(`${API_ENDPOINTS.repo.getAll}?page=${page}&limit=${limit}`, {
             withCredentials: true
         });
     }
 
     getRepoDetail(githubRepoId: string, branch: string): Observable<RepoDetailsResponse> {
         return this.http.get<RepoDetailsResponse>(`${API_ENDPOINTS.repo.getDetail(githubRepoId, branch)}`, {
+            withCredentials: true
+        });
+    }
+
+    syncRepos(): Observable<any> {
+        return this.http.post<any>(`${API_ENDPOINTS.repo.syncRepos}`, {}, {
             withCredentials: true
         });
     }

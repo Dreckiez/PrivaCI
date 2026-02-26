@@ -172,3 +172,87 @@ export const getRepoDetail = async (req, res) => {
         res.status(500).json({ success: false, error: "Failed to fetch repository details." });
     }
 }
+
+export const syncRepos = async (req, res) => {
+    const userId = req.session.user.dbID;
+
+    try {
+        // 1. Get the user's encrypted token from the DB
+        const userRes = await pool.query('SELECT access_token FROM users WHERE id = $1', [userId]);
+        
+        if (userRes.rowCount === 0) return res.status(404).json({ error: "User not found" });
+        
+        const encryptedToken = userRes.rows[0].access_token;
+        const accessToken = decryptToken(encryptedToken);
+
+        // 2. Fetch all repos from GitHub (Handling Pagination)
+        let allRepos = [];
+        let page = 1;
+        
+        while (page <= 10) { // Limit to 10 pages for safety
+            const reposResponse = await axios.get(`https://api.github.com/user/repos?per_page=100&page=${page}&sort=updated`, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
+
+            if (reposResponse.data.length === 0) break;
+            allRepos.push(...reposResponse.data);
+            page++;
+        }
+
+        if (allRepos.length === 0) {
+            return res.status(200).json({ success: true, message: "No repositories found on GitHub." });
+        }
+
+        // 3. Batch Update PostgreSQL
+        const client = await pool.connect();
+        
+        try {
+            await client.query("BEGIN");
+
+            const values = [];
+            const placeholders = [];
+            let paramIndex = 1;
+
+            allRepos.forEach(repo => {
+                placeholders.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`);
+                
+                values.push(
+                    repo.id, 
+                    userId, 
+                    repo.name, 
+                    repo.owner.login, 
+                    repo.private, 
+                    repo.language || 'Unknown',
+                    repo.updated_at
+                );
+            });
+
+            const batchInsertQuery = `
+                INSERT INTO repos (github_repo_id, user_id, name, owner, is_private, main_language, github_updated_at)
+                VALUES ${placeholders.join(', ')}
+                ON CONFLICT (github_repo_id) 
+                DO UPDATE SET 
+                    name = EXCLUDED.name,
+                    owner = EXCLUDED.owner,
+                    is_private = EXCLUDED.is_private,
+                    main_language = EXCLUDED.main_language,
+                    github_updated_at = EXCLUDED.github_updated_at;
+            `;
+
+            await client.query(batchInsertQuery, values);
+            await client.query("COMMIT");
+
+            res.status(200).json({ success: true, message: "Repositories synced successfully." });
+
+        } catch (dbError) {
+            await client.query("ROLLBACK");
+            throw dbError;
+        } finally {
+            client.release();
+        }
+
+    } catch (error) {
+        console.error("Sync Error:", error.message);
+        res.status(500).json({ success: false, error: "Failed to sync repositories with GitHub." });
+    }
+};

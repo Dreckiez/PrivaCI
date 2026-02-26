@@ -22,6 +22,8 @@ export class Repo {
 
   repos$!: Observable<Repository[]>;
 
+  isSyncing = false;
+
   ngOnInit() {
     this.repos$ = this.pageSubject.pipe(
       switchMap(page =>
@@ -56,6 +58,23 @@ export class Repo {
 
   get endIndex() {
     return Math.min(this.currentPage * this.limit, this.totalItems);
+  }
+
+  async syncGitHub() {
+    if (this.isSyncing) return; // Prevent double clicks
+    
+    this.isSyncing = true;
+    
+    try {
+      await firstValueFrom(this.repoService.syncRepos());
+      
+      this.pageSubject.next(this.currentPage); 
+      
+    } catch (error) {
+      // console.error("Failed to sync with GitHub:", error);
+    } finally {
+      this.isSyncing = false;
+    }
   }
 
   // --- Actions ---
