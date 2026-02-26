@@ -8,29 +8,51 @@
 
     <div class="mb-8 border-b border-[#2f3136] pb-6 flex justify-between items-end">
         <div>
-            <h1 class="text-2xl font-bold text-white mb-2 flex items-center">
+            <h1 class="text-2xl font-bold text-white flex items-center">
                 <span class="text-green-400 mr-3">➜</span> 
                 <span class="text-blue-400 mr-2">~</span> 
                 ./privaci_inspect --target=<span class="text-purple-400 ml-1">{{ repoName$ | async }}</span>
             </h1>
-            <div class="text-gray-500 text-sm pl-8 flex gap-6">
-                <span>// commit: <span class="text-gray-400">{{ commitHash }}</span></span>
-                <span>// scanned: <span class="text-gray-400">{{ lastScanned | date:'MMM d, y, h:mm a' }}</span></span>
             </div>
-        </div>
 
         <div class="px-4 py-2 border border-red-500/30 bg-red-500/10 text-red-400 rounded flex items-center gap-3 shadow-[inset_0_0_15px_rgba(239,68,68,0.1)]">
             <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-            <span class="font-bold tracking-wider uppercase">Status: {{ repoStatus }}</span>
+            <span class="font-bold tracking-wider uppercase">Overall: {{ repoStatus }}</span>
         </div>
     </div>
 
-    <div class="mb-6">
-        <app-branch-selector
-            [branches]="branches"
-            [selectedBranch]="(branch$ | async) ?? 'main'"
-            (branchChange)="onBranchChange($event)">
-        </app-branch-selector>
+    <div class="mb-6 flex flex-col gap-4 bg-[#1a1c1e] p-4 border border-[#2f3136] rounded shadow-inner">
+        
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <app-branch-selector
+                    [branches]="branches"
+                    [selectedBranch]="(branch$ | async) ?? 'main'"
+                    (branchChange)="onBranchChange($event)">
+                </app-branch-selector>
+                
+                <span class="text-xs font-bold px-2 py-1 rounded border border-green-500/30 bg-green-500/10 text-green-400 uppercase tracking-wider">
+                    Branch: SAFE
+                </span>
+            </div>
+
+            <button class="flex items-center gap-2 px-4 py-2 border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-black rounded transition-all font-bold tracking-wider text-sm uppercase group cursor-pointer">
+                <svg class="w-4 h-4 group-hover:animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                [ Scan_Current_Branch ]
+            </button>
+        </div>
+
+        <div class="flex items-center gap-6 text-xs text-gray-500 border-t border-[#2f3136] pt-3 mt-1">
+            <span class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                commit: <span class="text-gray-400">{{ commitHash }}</span>
+            </span>
+            <span class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                scanned: <span class="text-gray-400">{{ lastScanned | date:'MMM d, y, h:mm a' }}</span>
+            </span>
+        </div>
+
     </div>
 
     <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-[#2f3136] pb-2 flex items-center">
