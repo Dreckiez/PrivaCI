@@ -1,6 +1,65 @@
 import { pool } from "../libs/db.js";
 import axios from "axios";
 import { decryptToken } from "../utils/auth.util.js";
+import { executeBaselineScan, executeBranchScan } from "../utils/scan.util.js";
+
+export const scanBranch = async (req, res) => {
+    const githubRepoId = req.params.id;
+    const branch = req.body.branch || 'main'; 
+    const userId = req.session.user.dbID;
+
+    try {
+        const repoRes = await pool.query(`
+            SELECT r.id, r.name, r.owner, u.access_token 
+            FROM repos r JOIN users u ON r.user_id = u.id
+            WHERE r.github_repo_id = $1 AND r.user_id = $2
+        `, [githubRepoId, userId]);
+        
+        if (repoRes.rowCount === 0) return res.status(404).json({ error: "Repository not found" });
+
+        const result = await executeBranchScan(repoRes.rows[0], branch, userId);
+        res.status(200).json({ success: true, message: "Scan complete", data: result });
+
+    } catch (error) {
+        console.error("Single Scan Error:", error);
+        res.status(500).json({ success: false, error: "Failed to scan branch." });
+    }
+};
+
+export const scanAllBranches = async (req, res) => {
+    const githubRepoId = req.params.id;
+    const userId = req.session.user.dbID;
+
+    try {
+        const repoRes = await pool.query(`
+            SELECT r.id, r.name, r.owner, u.access_token 
+            FROM repos r JOIN users u ON r.user_id = u.id
+            WHERE r.github_repo_id = $1 AND r.user_id = $2
+        `, [githubRepoId, userId]);
+        
+        if (repoRes.rowCount === 0) return res.status(404).json({ error: "Repository not found" });
+        const repo = repoRes.rows[0];
+
+        // Fetch all branches from GitHub
+        const decryptedToken = decryptToken(repo.access_token);
+        const ghBranchesRes = await axios.get(`https://api.github.com/repos/${repo.owner}/${repo.name}/branches`, {
+            headers: { Authorization: `Bearer ${decryptedToken}` }
+        });
+        const branches = ghBranchesRes.data.map(b => b.name);
+
+        const results = await executeBaselineScan(repo, branches, userId);
+
+        res.status(200).json({ 
+            success: true, 
+            message: `Baseline scan complete for ${branches.length} branches.`, 
+            data: results 
+        });
+
+    } catch (error) {
+        console.error("Batch Scan Error:", error);
+        res.status(500).json({ success: false, error: "Failed to perform baseline scan." });
+    }
+};
 
 export const getRepos = async (req, res) => {
 
