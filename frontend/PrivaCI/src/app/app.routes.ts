@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-import { RepoDetails } from './pages/repo-details/repo-details';
 import { Login } from './pages/login/login';
 import { authGuard } from './guards/auth.guard';
 

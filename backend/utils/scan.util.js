@@ -67,7 +67,7 @@ export const executeBaselineScan = async (repo, branches, userId) => {
             }
         });
 
-        // 🔥 Prepare Custom Rules ONCE for the entire batch
+        // Prepare Custom Rules ONCE for the entire batch
         let tomlContent = BASE_TOML;
         const rulesRes = await pool.query('SELECT * FROM custom_rules WHERE user_id = $1', [userId]);
         if (rulesRes.rowCount > 0) {
@@ -137,6 +137,17 @@ export const executeBaselineScan = async (repo, branches, userId) => {
                 const client = await pool.connect();
                 try {
                     await client.query('BEGIN');
+
+                    await client.query(`
+                        DELETE FROM findings 
+                        WHERE scan_id IN (SELECT id FROM scans WHERE repo_id = $1 AND branch = $2)
+                    `, [repo.id, branch]);
+                    
+                    await client.query(`
+                        DELETE FROM scans 
+                        WHERE repo_id = $1 AND branch = $2
+                    `, [repo.id, branch]);
+
                     const scanRes = await client.query(`
                         INSERT INTO scans (repo_id, branch, commit_hash, status, pii_count, key_count)
                         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;
@@ -290,6 +301,16 @@ export const executeBranchScan = async (repo, branch, userId) => {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
+
+            await client.query(`
+                DELETE FROM findings 
+                WHERE scan_id IN (SELECT id FROM scans WHERE repo_id = $1 AND branch = $2)
+            `, [repo.id, branch]);
+            
+            await client.query(`
+                DELETE FROM scans 
+                WHERE repo_id = $1 AND branch = $2
+            `, [repo.id, branch]);
 
             const scanRes = await client.query(`
                 INSERT INTO scans (repo_id, branch, commit_hash, status, pii_count, key_count)
