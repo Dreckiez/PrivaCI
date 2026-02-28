@@ -10,6 +10,8 @@ export const BASE_TOML = `
         '''^\\.idea/.*''',
         '''^\\.vscode/.*''',
         '''^node_modules/.*''',
+        '''.*package-lock\\.json$''',
+        '''.*yarn\\.lock$''',
         '''.*\\.svg$''',
         '''.*\\.png$''',
         '''.*\\.jpg$''',

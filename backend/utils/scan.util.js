@@ -122,10 +122,20 @@ export const executeBaselineScan = async (repo, branches, userId) => {
                             else keyCount++;
 
                             const cleanRelativePath = path.relative(tempDir, leak.File).split(path.sep).join('/');
+                            
+                            const rawSecret = leak.Secret;
+                            const redactedVersion = redactSecret(rawSecret);
+                            
+                            let safeCodeSnippet = redactedVersion; 
+                            
+                            if (leak.Match && rawSecret) {
+                                safeCodeSnippet = `${leak.StartLine} |  ${leak.Match.replace(rawSecret, redactedVersion)}`;
+                            }
+                            
                             uniqueFindings.set(uniqueKey, {
                                 type, file: cleanRelativePath, line: leak.StartLine,
                                 severity, description: leak.Description || `Exposed ${leak.RuleID} detected.`,
-                                snippet: redactSecret(leak.Secret)
+                                snippet: safeCodeSnippet
                             });
                         }
                     });
@@ -283,13 +293,22 @@ export const executeBranchScan = async (repo, branch, userId) => {
                     
                     const cleanRelativePath = path.relative(tempDir, leak.File).split(path.sep).join('/');
 
+                    const rawSecret = leak.Secret;
+                    const redactedVersion = redactSecret(rawSecret);
+                    
+                    let safeCodeSnippet = redactedVersion; 
+                    
+                    if (leak.Match && rawSecret) {
+                        safeCodeSnippet = `${leak.StartLine} |  ${leak.Match.replace(rawSecret, redactedVersion)}`;
+                    }
+
                     uniqueFindings.set(uniqueKey, {
                         type,
                         file: cleanRelativePath,
                         line: leak.StartLine,
                         severity,
                         description: leak.Description || `Exposed ${leak.RuleID} detected.`,
-                        snippet: redactSecret(leak.Secret)
+                        snippet: safeCodeSnippet
                     });
                 }
             });

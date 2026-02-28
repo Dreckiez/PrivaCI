@@ -24,6 +24,8 @@ export class Repo {
 
   isSyncing = false;
 
+  scanningStates: { [key: string]: boolean } = {};
+
   ngOnInit() {
     this.repos$ = this.pageSubject.pipe(
       switchMap(page =>
@@ -74,6 +76,22 @@ export class Repo {
       // console.error("Failed to sync with GitHub:", error);
     } finally {
       this.isSyncing = false;
+    }
+  }
+
+  async scanRepo(githubRepoId: string) {
+    if (this.scanningStates[githubRepoId]) return;
+
+    this.scanningStates[githubRepoId] = true;
+
+    try {
+      await firstValueFrom(this.repoService.scanAll(githubRepoId));
+      // Refresh the list to fetch the updated scan status and badges
+      this.pageSubject.next(this.currentPage); 
+    } catch (error) {
+      console.error("Baseline Scan Error:", error);
+    } finally {
+      this.scanningStates[githubRepoId] = false;
     }
   }
 

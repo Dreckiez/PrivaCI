@@ -100,7 +100,7 @@
                     </button>
                 } @else {
                     <button (click)="scanCurrentBranch()" [disabled]="isScanning" 
-                            class="flex items-center gap-2 px-4 py-2 border border-gray-500/30 bg-gray-500/10 text-gray-400 hover:bg-gray-400 hover:text-black hover:border-gray-400 rounded transition-all font-bold tracking-wider text-sm uppercase group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="flex items-center gap-2 px-4 py-2 border border-gray-500/30 bg-gray-500/10 text-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500 rounded transition-all font-bold tracking-wider text-sm uppercase group cursor-pointer shadow-[0_0_10px_rgba(59,130,246,0.1)] hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg class="w-4 h-4" [class.animate-spin]="isScanning" [class.group-hover:animate-spin]="!isScanning" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                         {{ isScanning ? '[ Scanning... ]' : '[ Scan_Current_Branch ]' }}
                     </button>
