@@ -3,8 +3,10 @@ const API_BASE = "http://localhost:3000/api";
 export const API_ENDPOINTS = {
     repo: {
         getAll: `${API_BASE}/repo`,
-        getDetail: (id: string, branch:string) => `${API_BASE}/repo/${id}/details?branch=${encodeURIComponent(branch)}`,
-        syncRepos: `${API_BASE}/repo/sync`
+        getDetail: (id: string, branch: string) => `${API_BASE}/repo/${id}/details?branch=${encodeURIComponent(branch)}`,
+        syncRepos: `${API_BASE}/repo/sync`,
+        scanBranch: (id: string) => `${API_BASE}/repo/${id}/scanBranch`,
+        scanAllBranches: (id: string) => `${API_BASE}/repo/${id}/scanAll`,
     },
     auth: {
         login: `${API_BASE}/auth/login`,

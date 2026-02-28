@@ -27,4 +27,16 @@ export class RepoService {
             withCredentials: true
         });
     }
+
+    scanBranch(githubRepoId: string, branch: string): Observable<any> {
+        return this.http.post<any>(`${API_ENDPOINTS.repo.scanBranch(githubRepoId)}`, { branch }, {
+            withCredentials: true
+        });
+    }
+
+    scanAll(githubRepoId: string): Observable<any> {
+        return this.http.post<any>(`${API_ENDPOINTS.repo.scanAllBranches(githubRepoId)}`, {}, {
+            withCredentials: true
+        });
+    }
 }

@@ -23,6 +23,7 @@ export class RepoDetails {
 
   data: RepoDetailsData | null = null;
   isLoading = true;
+  isScanning = false;
   
   ngOnInit() {
     combineLatest([
@@ -49,7 +50,7 @@ export class RepoDetails {
       
     } finally {
       this.isLoading = false;
-      this.cdr.detectChanges(); // THE FIX: Force Angular to redraw the screen!
+      this.cdr.detectChanges();
     }
   }
 
@@ -59,6 +60,44 @@ export class RepoDetails {
       queryParams: {branch: branchName},
       queryParamsHandling: 'merge'
     })
+  }
+
+  async scanAllBranches() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id || this.isScanning) return;
+    
+    this.isScanning = true;
+    this.cdr.detectChanges(); // Force UI to show loading spinner immediately
+    
+    try {
+      await firstValueFrom(this.repoService.scanAll(id));
+      // Refresh the UI with the newly generated scan data
+      await this.fetchRepoDetails(id, this.data?.selectedBranch || 'main');
+    } catch (error) {
+      console.error("Scan All Error:", error);
+    } finally {
+      this.isScanning = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  async scanCurrentBranch() {
+    const id = this.route.snapshot.paramMap.get('id');
+    const branch = this.data?.selectedBranch;
+    if (!id || !branch || this.isScanning) return;
+    
+    this.isScanning = true;
+    this.cdr.detectChanges();
+    
+    try {
+      await firstValueFrom(this.repoService.scanBranch(id, branch));
+      await this.fetchRepoDetails(id, branch);
+    } catch (error) {
+      console.error("Scan Branch Error:", error);
+    } finally {
+      this.isScanning = false;
+      this.cdr.detectChanges();
+    }
   }
 
 }

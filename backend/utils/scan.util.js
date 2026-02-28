@@ -5,36 +5,9 @@ import path from "path";
 import os from "os";
 import { decryptToken } from "../utils/auth.util.js";
 import { pool } from "../libs/db.js";
+import { BASE_TOML } from "./rule.util.js";
 
 const execFilePromise = util.promisify(execFile);
-
-const BASE_TOML = `
-    title = "PrivaCI PII & Custom Rules"
-
-    [[rules]]
-    id = "pii-email"
-    description = "Email Address"
-    regex = '''[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}'''
-    tags = ["PII", "WARNING"]
-
-    [[rules]]
-    id = "pii-phone"
-    description = "Phone Number (US/General)"
-    regex = '''\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b'''
-    tags = ["PII", "WARNING"]
-
-    [[rules]]
-    id = "pii-ssn"
-    description = "Social Security Number"
-    regex = '''\\b\\d{3}-\\d{2}-\\d{4}\\b'''
-    tags = ["PII", "CRITICAL"]
-
-    [[rules]]
-    id = "pii-credit-card"
-    description = "Credit Card Number"
-    regex = '''\\b(?:\\d[ -]*?){13,16}\\b'''
-    tags = ["PII", "CRITICAL"]
-`;
 
 const redactSecret = (secret) => {
     if (!secret) return '***';
@@ -63,23 +36,34 @@ const runGitleaks = async (args, reportFilePath, timeoutMs = 30000) => {
 
 export const executeBaselineScan = async (repo, branches, userId) => {
     let tempDir = null;
+    let gitConfigPath = null;
     const accessToken = decryptToken(repo.access_token);
     const results = [];
 
     try {
         tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `privaci-${repo.name}-baseline-`));
         const reportPath = path.join(tempDir, 'gitleaks-report.json');
+
+        gitConfigPath = path.join(os.tmpdir(), `privaci-gitconfig-${Date.now()}-${Math.random().toString(36).substring(2)}`);
+        const gitConfigContent = `
+[credential]
+    helper = 
+[url "https://${accessToken}@github.com/"]
+    insteadOf = https://github.com/
+`;
+        await fs.writeFile(gitConfigPath, gitConfigContent);
         
-        // 🔥 FIX 1 & 2: Single Clone for ALL branches with a strict 60-second timeout!
-        // If the repo is a 5GB monorepo, this will safely timeout and kill the download.
         const repoUrl = `https://github.com/${repo.owner}/${repo.name}.git`;
         await execFilePromise('git', ['clone', '--depth', '1', '--no-single-branch', repoUrl, tempDir], {
             timeout: 60000, 
             env: {
                 ...process.env,
-                GIT_CONFIG_COUNT: '1',
-                GIT_CONFIG_KEY_0: 'http.extraHeader',
-                GIT_CONFIG_VALUE_0: `AUTHORIZATION: bearer ${accessToken}`
+                GIT_CONFIG_GLOBAL: gitConfigPath,
+                GIT_CONFIG_NOSYSTEM: '1',
+                GIT_TERMINAL_PROMPT: '0',
+                // GIT_CONFIG_COUNT: '1',
+                // GIT_CONFIG_KEY_0: 'http.extraHeader',
+                // GIT_CONFIG_VALUE_0: `AUTHORIZATION: bearer ${accessToken}`
             }
         });
 
@@ -106,6 +90,7 @@ export const executeBaselineScan = async (repo, branches, userId) => {
                 await execFilePromise('git', ['checkout', branch], { cwd: tempDir, timeout: 10000 });
                 const { stdout: commitHashOutput } = await execFilePromise('git', ['rev-parse', 'HEAD'], { cwd: tempDir });
                 const commitHash = commitHashOutput.trim().substring(0, 7);
+                await fs.rm(path.join(tempDir, '.git'), { recursive: true, force: true }).catch(() => {});
 
                 let allRawFindings = [];
 
@@ -189,30 +174,46 @@ export const executeBaselineScan = async (repo, branches, userId) => {
 
     } finally {
         if (tempDir) await fs.rm(tempDir, { recursive: true, force: true }).catch(console.error);
+        if (gitConfigPath) await fs.rm(gitConfigPath, { force: true }).catch(console.error);
     }
 };
 
 export const executeBranchScan = async (repo, branch, userId) => {
     let tempDir = null;
+    let gitConfigPath = null;
     const accessToken = decryptToken(repo.access_token);
 
     try {
         tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `privaci-${repo.name}-${branch.replace(/[^a-zA-Z0-9-]/g, '_')}-`));
         const reportPath = path.join(tempDir, 'gitleaks-report.json');
 
+        gitConfigPath = path.join(os.tmpdir(), `privaci-gitconfig-${Date.now()}-${Math.random().toString(36).substring(2)}`);
+        const gitConfigContent = `
+[credential]
+    helper = 
+[url "https://${accessToken}@github.com/"]
+    insteadOf = https://github.com/
+`;
+        await fs.writeFile(gitConfigPath, gitConfigContent);
+        
         const repoUrl = `https://github.com/${repo.owner}/${repo.name}.git`;
+
         await execFilePromise('git', ['clone', '--depth', '1', '--branch', branch, repoUrl, tempDir], {
             timeout: 60000,
             env: {
                 ...process.env,
-                GIT_CONFIG_COUNT: '1',
-                GIT_CONFIG_KEY_0: 'http.extraHeader',
-                GIT_CONFIG_VALUE_0: `AUTHORIZATION: bearer ${accessToken}`
+                GIT_CONFIG_GLOBAL: gitConfigPath,
+                GIT_CONFIG_NOSYSTEM: '1',
+                GIT_TERMINAL_PROMPT: '0',
+                // GIT_CONFIG_COUNT: '1',
+                // GIT_CONFIG_KEY_0: 'http.extraHeader',
+                // GIT_CONFIG_VALUE_0: `AUTHORIZATION: bearer ${accessToken}`
             }
         });
 
         const { stdout: commitHashOutput } = await execFilePromise('git', ['rev-parse', 'HEAD'], { cwd: tempDir });
         const commitHash = commitHashOutput.trim().substring(0, 7);
+        await fs.rm(path.join(tempDir, '.git'), { recursive: true, force: true }).catch(() => {});
 
         let allRawFindings = [];
 
@@ -325,8 +326,7 @@ export const executeBranchScan = async (repo, branch, userId) => {
         return { branch, status: overallStatus, vulnerabilities: findingsData.length };
 
     } finally {
-        if (tempDir) {
-            await fs.rm(tempDir, { recursive: true, force: true }).catch(console.error);
-        }
+        if (tempDir) await fs.rm(tempDir, { recursive: true, force: true }).catch(console.error);
+        if (gitConfigPath) await fs.rm(gitConfigPath, { force: true }).catch(console.error);
     }
 };
