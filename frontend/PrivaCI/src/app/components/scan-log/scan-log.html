@@ -1,17 +1,26 @@
 <div class="bg-[#1e2124] border border-[#2f3136] rounded shadow-xl overflow-hidden group hover:border-gray-500 transition-colors">
                 
-    <div class="bg-[#1a1c1e] px-4 py-3 border-b border-[#2f3136] flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <span class="px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider rounded border"
+    <div class="bg-[#1a1c1e] px-4 py-3 border-b border-[#2f3136] flex flex-col xl:flex-row justify-between items-start xl:items-center gap-2 xl:gap-4">
+        
+        <div class="flex items-center gap-3 min-w-0 flex-1 w-full">
+            
+            <span class="px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider rounded border shrink-0"
                     [class.bg-red-500/10]="log.severity === 'CRITICAL'" [class.text-red-400]="log.severity === 'CRITICAL'" [class.border-red-500/30]="log.severity === 'CRITICAL'"
                     [class.bg-yellow-500/10]="log.severity === 'WARNING'" [class.text-yellow-400]="log.severity === 'WARNING'" [class.border-yellow-500/30]="log.severity === 'WARNING'">
                 {{ log.type }}
             </span>
-            <span class="text-sm text-blue-300 font-bold">{{ log.file }}</span>
-            <span class="text-xs text-gray-500">line: <span class="text-gray-300">{{ log.line }}</span></span>
+            
+            <span class="text-sm text-blue-300 font-bold truncate cursor-help" [title]="log.file">
+                {{ log.file }}
+            </span>
+            
+            <span class="text-xs text-gray-500 shrink-0 whitespace-nowrap">
+                line: <span class="text-gray-300">{{ log.line }}</span>
+            </span>
         </div>
         
-        <div class="text-xs text-gray-400">
+        <div class="text-xs text-gray-400 xl:text-right xl:max-w-[40%] shrink-0 truncate cursor-help w-full xl:w-auto" 
+             [title]="log.description">
             {{ log.description }}
         </div>
     </div>
@@ -27,9 +36,6 @@
     <div class="px-4 py-2 border-t border-[#2f3136] bg-[#1a1c1e] flex justify-end gap-3">
         <button class="text-xs cursor-pointer px-3 py-1 text-gray-400 hover:text-white hover:bg-[#2f3136] rounded transition-colors border border-transparent">
             [ Ignore_Warning ]
-        </button>
-        <button class="text-xs cursor-pointer px-3 py-1 bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-black border border-green-500/30 rounded transition-all">
-            [ Generate_Fix ]
         </button>
     </div>
 
