@@ -15,6 +15,7 @@ export const API_ENDPOINTS = {
     auth: {
         login: `${API_BASE}/auth/login`,
         logout: `${API_BASE}/auth/logout`,
-        me: `${API_BASE}/auth/me`
+        me: `${API_BASE}/auth/me`,
+        deleteAcc: `${API_BASE}/auth/account`
     }
 }

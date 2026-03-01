@@ -154,6 +154,24 @@ export const githubCallback = async (req, res) => {
     }
 };
 
+export const deleteAccount = async (req, res) => {
+    const userId = req.session?.user?.dbID;
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    try {
+        await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+
+        req.session.destroy((err) => {
+            if (err) throw err;
+            res.clearCookie('sid');
+            return res.status(200).json({ message: "Account purged." });
+        });
+    } catch (error) {
+        console.error("Nuke Error:", error);
+        res.status(500).json({ error: "System failure during account purge." });
+    }
+};
+
 export const userInfo = async (req, res) => {
     if (!req.session.user) return res.status(401).json({authenticated: false});
 

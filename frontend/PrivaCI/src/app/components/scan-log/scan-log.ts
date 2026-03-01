@@ -1,11 +1,10 @@
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { ScanService } from '../../services/scan.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-scan-log',
-  imports: [DatePipe],
+  imports: [],
   templateUrl: './scan-log.html',
   styleUrl: './scan-log.css',
 })

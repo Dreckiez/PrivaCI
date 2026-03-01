@@ -43,4 +43,18 @@ export class AuthService {
             
         }
     }
+
+    async deleteAccount() {
+        try {
+            await firstValueFrom(
+                this.http.delete(API_ENDPOINTS.auth.deleteAcc, {
+                    withCredentials: true
+                })
+            );
+            this.user = null;
+            this.authenticated = false;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
