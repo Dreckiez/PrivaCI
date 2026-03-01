@@ -4,7 +4,7 @@
 
 PrivaCI acts as an asynchronous, non-blocking CI/CD security gate. It integrates directly with GitHub via OAuth, cloning repositories into isolated environments, and orchestrating `gitleaks` child processes to scan codebases against baseline and custom-defined vulnerability heuristics.
 
-![PrivaCI Dashboard](/images/Login.png)
+![PrivaCI](/images/Login.png)
 
 ## 🚀 Key Features
 
@@ -88,3 +88,9 @@ npm install
 npm start
 ```
 Navigate to http://localhost:4200 in your browser to access the PrivaCI terminal.
+
+### Screenshots
+
+![PrivaCI Dashboard](/images/Dashboard.png)
+![PrivaCI Repo](/images/Repo.png)
+![PrivaCI Settings](/images/Settings.png)
