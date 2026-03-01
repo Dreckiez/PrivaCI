@@ -68,34 +68,55 @@
 
     <div class="bg-[#1e2124] border border-[#2f3136] rounded shadow-lg overflow-hidden mb-8">
         <div class="bg-[#1a1c1e] px-6 py-4 border-b border-[#2f3136] flex items-center gap-3">
-            <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-            <h2 class="text-gray-300 font-bold tracking-wider uppercase text-xs">Local_Environment_Config</h2>
+            <svg class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <h2 class="text-gray-300 font-bold tracking-wider uppercase text-xs">Custom Detection Rules</h2>
         </div>
-        <div class="p-6 space-y-6">
-            <div class="flex items-center justify-between border-b border-[#2f3136]/50 pb-4">
-                <div>
-                    <div class="text-sm font-bold text-white mb-1">Audit Trail Visibility</div>
-                    <div class="text-xs text-gray-500">Display ignored warnings and vulnerabilities dimmed at the bottom of the log file.</div>
-                </div>
-                <button (click)="togglePref('showAuditTrail')" class="shrink-0 cursor-pointer w-10 h-5 rounded-full relative transition-colors duration-300 focus:outline-none border"
-                        [class.bg-green-500]="localPrefs.showAuditTrail" [class.border-green-400]="localPrefs.showAuditTrail"
-                        [class.bg-[#151719]]="!localPrefs.showAuditTrail" [class.border-[#2f3136]]="!localPrefs.showAuditTrail">
-                    <div class="absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-300 shadow-md"
-                         [class.translate-x-5]="localPrefs.showAuditTrail"></div>
+        
+        <div class="p-6">
+            <p class="text-xs text-gray-500 mb-6">Inject custom regular expressions into the scanning engine to detect proprietary secrets, internal endpoints, or specific code patterns.</p>
+            
+            <div class="flex flex-col md:flex-row gap-3 mb-8 bg-[#151719] p-4 border border-[#2f3136] rounded">
+                <input type="text" [(ngModel)]="newRule.name" placeholder="Rule Name (e.g., Internal API Key)" 
+                       class="flex-1 bg-[#0d0e10] border border-[#2f3136] rounded px-3 py-2 text-xs text-gray-300 focus:outline-none focus:border-purple-500 font-mono">
+                
+                <input type="text" [(ngModel)]="newRule.regex" placeholder="Regex (e.g., ^INV-[A-Z0-9]{16}$)" 
+                       class="flex-2 bg-[#0d0e10] border border-[#2f3136] rounded px-3 py-2 text-xs text-blue-400 focus:outline-none focus:border-purple-500 font-mono">
+                
+                <select [(ngModel)]="newRule.severity" 
+                        class="bg-[#0d0e10] border border-[#2f3136] rounded px-3 py-2 text-xs text-gray-300 focus:outline-none focus:border-purple-500 font-mono">
+                    <option value="WARNING">WARNING</option>
+                    <option value="CRITICAL">CRITICAL</option>
+                </select>
+
+                <button (click)="addRule()" [disabled]="!newRule.name || !newRule.regex || isSavingRule"
+                        class="cursor-pointer px-4 py-2 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white border border-purple-500/30 rounded text-xs transition-colors uppercase tracking-wider font-bold disabled:opacity-50">
+                    {{ isSavingRule ? 'ADDING...' : '+ ADD RULE' }}
                 </button>
             </div>
 
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="text-sm font-bold text-white mb-1">Terminal Animations</div>
-                    <div class="text-xs text-gray-500">Enable typing cursor effects and UI pulse animations during scan execution.</div>
-                </div>
-                <button (click)="togglePref('terminalAnimations')" class="shrink-0 cursor-pointer w-10 h-5 rounded-full relative transition-colors duration-300 focus:outline-none border"
-                        [class.bg-green-500]="localPrefs.terminalAnimations" [class.border-green-400]="localPrefs.terminalAnimations"
-                        [class.bg-[#151719]]="!localPrefs.terminalAnimations" [class.border-[#2f3136]]="!localPrefs.terminalAnimations">
-                    <div class="absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-300 shadow-md"
-                         [class.translate-x-5]="localPrefs.terminalAnimations"></div>
-                </button>
+            <div class="space-y-3">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 border-b border-[#2f3136] pb-2">Active Rules ({{ customRules.length }})</div>
+                
+                @for (rule of customRules; track rule.id) {
+                    <div class="flex items-center justify-between p-3 bg-[#151719] border border-[#2f3136] rounded group hover:border-gray-500 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border shrink-0"
+                                  [class.bg-red-500/10]="rule.severity === 'CRITICAL'" [class.text-red-400]="rule.severity === 'CRITICAL'" [class.border-red-500/30]="rule.severity === 'CRITICAL'"
+                                  [class.bg-yellow-500/10]="rule.severity === 'WARNING'" [class.text-yellow-400]="rule.severity === 'WARNING'" [class.border-yellow-500/30]="rule.severity === 'WARNING'">
+                                {{ rule.severity }}
+                            </span>
+                            <div>
+                                <div class="text-sm font-bold text-gray-300">{{ rule.name }}</div>
+                                <div class="text-xs text-blue-400 font-mono mt-0.5">{{ rule.regex }}</div>
+                            </div>
+                        </div>
+                        <button (click)="removeRule(rule.id)" class="cursor-pointer text-gray-600 hover:text-red-400 focus:outline-none p-2 transition-colors" title="Delete Rule">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                } @empty {
+                    <div class="text-xs text-gray-600 italic py-4 text-center border border-dashed border-[#2f3136] rounded">No custom rules defined. Engine running on default settings.</div>
+                }
             </div>
         </div>
     </div>
@@ -144,6 +165,38 @@
                             {{ isDeleting ? 'PURGING...' : 'CONFIRM PURGE' }}
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (toast.visible) {
+        <div class="fixed bottom-6 right-6 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300 pointer-events-none">
+            <div class="bg-[#0d0e10]/95 backdrop-blur-md border shadow-2xl p-4 flex items-start gap-4 max-w-md rounded"
+                 [class.border-red-500/50]="toast.type === 'error'"
+                 [class.border-green-500/50]="toast.type === 'success'"
+                 [class.border-yellow-500/50]="toast.type === 'warning'">
+                
+                <div class="mt-0.5 shrink-0">
+                    @if (toast.type === 'error') {
+                        <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    }
+                    @if (toast.type === 'success') {
+                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    }
+                    @if (toast.type === 'warning') {
+                        <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                    }
+                </div>
+
+                <div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-widest mb-1"
+                        [class.text-red-500]="toast.type === 'error'"
+                        [class.text-green-500]="toast.type === 'success'"
+                        [class.text-yellow-500]="toast.type === 'warning'">
+                        System Output
+                    </h4>
+                    <p class="text-xs text-gray-300 font-mono leading-relaxed">{{ toast.message }}</p>
                 </div>
             </div>
         </div>

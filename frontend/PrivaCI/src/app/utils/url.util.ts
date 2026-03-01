@@ -1,6 +1,11 @@
 const API_BASE = "http://localhost:3000/api";
 
 export const API_ENDPOINTS = {
+    setting: {
+        getCustomRules: `${API_BASE}/settings/custom-rules`,
+        createCustomRules: `${API_BASE}/settings/custom-rules`,
+        deleteCustomRules: (id: number) => `${API_BASE}/settings/custom-rules/${id}`
+    },
     scan: {
         getScan: `${API_BASE}/scan`,
         updateFinding: `${API_BASE}/scan/findings`
