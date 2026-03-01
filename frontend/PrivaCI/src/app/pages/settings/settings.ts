@@ -41,7 +41,7 @@ export class Settings {
     this.toastTimeout = setTimeout(() => {
       this.toast.visible = false;
       this.cdr.detectChanges();
-    }, 4000); // Disappears after 4 seconds
+    }, 3000);
   }
 
   async fetchRules() {
@@ -59,7 +59,7 @@ export class Settings {
     try {
       new RegExp(this.newRule.regex);
     } catch (e) {
-      this.showToast("Invalid Regex Syntax. Please check for unclosed brackets.", "error");
+      this.showToast("Invalid Regex Syntax. Please check again.", "error");
       return; // Stop the execution here!
     }
     

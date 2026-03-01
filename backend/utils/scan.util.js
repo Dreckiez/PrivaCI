@@ -82,7 +82,7 @@ export const executeBaselineScan = async (repo, branches, userId) => {
                 tomlContent += `\n[[rules]]\n`;
                 tomlContent += `id = "custom_${rule.id}"\n`;
                 tomlContent += `description = "${rule.name}"\n`;
-                tomlContent += `regex = ${JSON.stringify(rule.regex)}\n`;
+                tomlContent += `regex = '''(?i)${rule.regex}'''\n`;
                 tomlContent += `tags = ["PII", "${rule.severity}"]\n`;
             });
         }
@@ -282,10 +282,12 @@ export const executeBranchScan = async (repo, branch, userId) => {
                 tomlContent += `\n[[rules]]\n`;
                 tomlContent += `id = "custom_${rule.id}"\n`;
                 tomlContent += `description = "${rule.name}"\n`;
-                tomlContent += `regex = ${JSON.stringify(rule.regex)}\n`;
+                tomlContent += `regex = '''(?i)${rule.regex}'''\n`;
                 tomlContent += `tags = ["PII", "${rule.severity}"]\n`;
             });
         }
+
+        console.log(tomlContent);
 
         const customConfigPath = path.join(tempDir, 'custom-rules.toml');
         const customReportPath = path.join(tempDir, 'custom-report.json');
