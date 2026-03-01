@@ -101,3 +101,19 @@ export const getScans = async (req, res) => {
         return res.status(500).json({ error: "Failed to fetch dashboard overview data." });
     }
 }
+
+export const updateFindingStatus = async (req, res) => {
+    const { findingId, status } = req.body;
+
+    if (!findingId || !['OPEN', 'IGNORED', 'FIXED'].includes(status)) {
+        return res.status(400).json({ error: "Invalid status or missing ID." });
+    }
+
+    try {
+        await pool.query('UPDATE findings SET status = $1 WHERE id = $2', [status, findingId]);
+        return res.status(200).json({ success: true, message: `Finding marked as ${status}` });
+    } catch (error) {
+        console.error("Status Update Error:", error.message);
+        return res.status(500).json({ error: "Failed to update status." });
+    }
+};

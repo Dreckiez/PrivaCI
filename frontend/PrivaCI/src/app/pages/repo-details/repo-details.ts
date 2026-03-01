@@ -37,6 +37,22 @@ export class RepoDetails {
     })
   }
 
+  get openFindings() {
+    return this.data?.currentScan?.findings?.filter((f: any) => f.status === 'OPEN') || [];
+  }
+
+  get ignoredFindings() {
+    return this.data?.currentScan?.findings?.filter((f: any) => f.status === 'IGNORED') || [];
+  }
+
+  refreshData() {
+    const id = this.route.snapshot.paramMap.get('id');
+    const branch = this.data?.selectedBranch || 'main';
+    if (id) {
+      this.fetchRepoDetails(id, branch);
+    }
+  }
+
   async fetchRepoDetails(id: string, branch: string) {
     this.isLoading = true;
     this.cdr.detectChanges();

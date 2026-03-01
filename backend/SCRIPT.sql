@@ -35,6 +35,7 @@ CREATE TABLE findings (
   id SERIAL PRIMARY KEY,
   scan_id INTEGER REFERENCES scans(id) ON DELETE CASCADE,
   type TEXT CHECK (type IN ('PII','KEY')) NOT NULL,
+  status TEXT DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'IGNORED')),
   file TEXT NOT NULL,
   line INTEGER NOT NULL,
   severity TEXT CHECK (severity IN ('WARNING','CRITICAL')) NOT NULL,

@@ -24,12 +24,14 @@ export interface DashboardData {
 export type SecretType = 'KEY' | 'PII';
 
 export interface ScanFinding {
+  id: string;
   type: SecretType;
   file: string;
   line: number;
   severity: 'WARNING' | 'CRITICAL';
   description: string;
   snippet: string;
+  status: 'OPEN' | 'IGNORED';
 }
 
 export interface CurrentScan {

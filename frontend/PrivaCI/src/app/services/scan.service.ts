@@ -29,4 +29,11 @@ export class ScanService {
             }))
         );
     }
+
+    updateFindingStatus(findingId: number, status: 'OPEN' | 'IGNORED'): Observable<any> {
+        return this.http.post(`${API_ENDPOINTS.scan.updateFinding}`, 
+            { findingId, status },
+            { withCredentials: true }
+        );
+    }
 }

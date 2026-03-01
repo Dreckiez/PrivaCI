@@ -202,7 +202,7 @@ export const getRepoDetail = async (req, res) => {
             branchStatus = scanDetails.status;
 
             const findingsRes = await pool.query(`
-                SELECT type, file, line, severity, description, snippet 
+                SELECT id, type, file, line, severity, description, snippet, status
                 FROM findings 
                 WHERE scan_id = $1
             `, [scanDetails.id]);

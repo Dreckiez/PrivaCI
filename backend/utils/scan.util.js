@@ -159,6 +159,17 @@ export const executeBaselineScan = async (repo, branches, userId) => {
                 try {
                     await client.query('BEGIN');
 
+                    const ignoredRes = await client.query(`
+                        SELECT f.file, f.line, f.description 
+                        FROM findings f
+                        JOIN scans s ON f.scan_id = s.id
+                        WHERE s.repo_id = $1 AND s.branch = $2 AND f.status = 'IGNORED'
+                    `, [repo.id, branch]);
+
+                    const ignoredSet = new Set(
+                        ignoredRes.rows.map(r => `${r.file}-${r.line}-${r.description}`)
+                    );
+
                     await client.query(`
                         DELETE FROM findings 
                         WHERE scan_id IN (SELECT id FROM scans WHERE repo_id = $1 AND branch = $2)
@@ -179,10 +190,12 @@ export const executeBaselineScan = async (repo, branches, userId) => {
                         const placeholders = [];
                         let paramIndex = 1;
                         findingsData.forEach(f => {
-                            placeholders.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`);
-                            values.push(scanRes.rows[0].id, f.type, f.file, f.line, f.severity, f.description, f.snippet);
+                            const findingSignature = `${f.file}-${f.line}-${f.description}`;
+                            const findingStatus = ignoredSet.has(findingSignature) ? 'IGNORED' : 'OPEN';
+                            placeholders.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`);
+                            values.push(scanRes.rows[0].id, f.type, f.file, f.line, f.severity, f.description, f.snippet, findingStatus);
                         });
-                        await client.query(`INSERT INTO findings (scan_id, type, file, line, severity, description, snippet) VALUES ${placeholders.join(', ')}`, values);
+                        await client.query(`INSERT INTO findings (scan_id, type, file, line, severity, description, snippet, status) VALUES ${placeholders.join(', ')}`, values);
                     }
                     await client.query('COMMIT');
                 } catch (dbError) {
@@ -337,6 +350,17 @@ export const executeBranchScan = async (repo, branch, userId) => {
         try {
             await client.query('BEGIN');
 
+            const ignoredRes = await client.query(`
+                SELECT f.file, f.line, f.description 
+                FROM findings f
+                JOIN scans s ON f.scan_id = s.id
+                WHERE s.repo_id = $1 AND s.branch = $2 AND f.status = 'IGNORED'
+            `, [repo.id, branch]);
+
+            const ignoredSet = new Set(
+                ignoredRes.rows.map(r => `${r.file}-${r.line}-${r.description}`)
+            );
+
             await client.query(`
                 DELETE FROM findings 
                 WHERE scan_id IN (SELECT id FROM scans WHERE repo_id = $1 AND branch = $2)
@@ -360,11 +384,13 @@ export const executeBranchScan = async (repo, branch, userId) => {
                 const placeholders = [];
                 let paramIndex = 1;
                 findingsData.forEach(f => {
-                    placeholders.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`);
-                    values.push(scanId, f.type, f.file, f.line, f.severity, f.description, f.snippet);
+                    const findingSignature = `${f.file}-${f.line}-${f.description}`;
+                    const findingStatus = ignoredSet.has(findingSignature) ? 'IGNORED' : 'OPEN';
+                    placeholders.push(`($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`);
+                    values.push(scanId, f.type, f.file, f.line, f.severity, f.description, f.snippet, findingStatus);
                 });
                 await client.query(`
-                    INSERT INTO findings (scan_id, type, file, line, severity, description, snippet)
+                    INSERT INTO findings (scan_id, type, file, line, severity, description, snippet, status)
                     VALUES ${placeholders.join(', ')}
                 `, values);
             }
