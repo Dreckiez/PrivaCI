@@ -11,6 +11,16 @@ export interface ScanResult {
     keysCount: number;
 }
 
+export interface DashboardData {
+  stats: {
+    totalScans: number;
+    todayScans: number;
+    criticalScans: number;
+    safeScans: number;
+  };
+  recentScans: ScanResult[];
+}
+
 export type SecretType = 'KEY' | 'PII';
 
 export interface ScanFinding {

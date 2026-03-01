@@ -1,7 +1,7 @@
-import { pool } from "../libs/db";
+import { pool } from "../libs/db.js";
 
 export const getScans = async (req, res) => {
-    const userId = req.user.id; 
+    const userId = req.session.user.dbID; 
 
     try {
         // 1. Fetch all aggregate stats in ONE single query for maximum performance
@@ -30,6 +30,7 @@ export const getScans = async (req, res) => {
             RankedScans AS (
                 SELECT 
                     r.id AS repo_id,
+                    r.github_repo_id,
                     r.name AS repo_name,
                     s.branch,
                     s.commit_hash,
@@ -52,6 +53,7 @@ export const getScans = async (req, res) => {
             WorstBranchPerRepo AS (
                 SELECT DISTINCT ON (repo_id)
                     repo_id,
+                    github_repo_id,
                     repo_name,
                     branch,
                     commit_hash,
@@ -68,7 +70,7 @@ export const getScans = async (req, res) => {
                     commit_hash DESC
             )
             SELECT 
-                repo_id,
+                github_repo_id,
                 repo_name,
                 branch,
                 commit_hash,

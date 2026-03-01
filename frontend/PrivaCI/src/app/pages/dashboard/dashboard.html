@@ -16,7 +16,7 @@
                 <span class="text-blue-400">></span> [ Total_Scans ]
             </div>
             <div class="text-4xl text-gray-200 font-bold flex items-baseline gap-2">
-                {{ (stats$ | async)?.total }} <span class="text-sm text-green-400 font-normal tracking-wide">+2 today</span>
+                {{ (stats$ | async)?.totalScans || 0 }} <span class="text-sm text-green-400 font-normal tracking-wide">+{{ (stats$ | async)?.todayScans || 0 }} today</span>
             </div>
         </div>
 
@@ -26,7 +26,7 @@
                 <span class="text-red-500">></span> [ Critical_Leaks ]
             </div>
             <div class="text-4xl text-red-500 font-bold flex items-baseline gap-2">
-                {{ (stats$ | async)?.critical }} <span class="text-sm text-red-400 font-normal tracking-wide">requires_action</span>
+                {{ (stats$ | async)?.criticalScans || 0 }} <span class="text-sm text-red-400 font-normal tracking-wide">requires_action</span>
             </div>
         </div>
 
@@ -35,7 +35,7 @@
                 <span class="text-green-500">></span> [ Safe_Repos ]
             </div>
             <div class="text-4xl text-green-400 font-bold flex items-baseline gap-2">
-                {{ (stats$ | async)?.safe }} <span class="text-sm text-green-500/70 font-normal tracking-wide">verified</span>
+                {{ (stats$ | async)?.safeScans || 0 }} <span class="text-sm text-green-500/70 font-normal tracking-wide">verified</span>
             </div>
         </div>
     </div>
@@ -44,7 +44,7 @@
         <h2 class="text-lg text-white font-bold flex items-center">
             <span class="text-yellow-400 mr-2">cat</span> /var/log/recent_scans.log
         </h2>
-        <a href="/repositories" class="text-xs text-blue-400 hover:text-blue-300 hover:underline tracking-wider uppercase">
+        <a routerLink="/repo" class="text-xs text-blue-400 hover:text-blue-300 hover:underline tracking-wider uppercase">
             [ View_All ]
         </a>
     </div>

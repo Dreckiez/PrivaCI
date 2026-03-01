@@ -1,5 +1,5 @@
 import express from "express";
-import { getScans } from "../controllers/scan.controller";
+import { getScans } from "../controllers/scan.controller.js";
 
 const router = express.Router();
 

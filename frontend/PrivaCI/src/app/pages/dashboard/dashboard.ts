@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { ScanService } from '../../services/scan.service';
 import { ScanEntry } from '../../components/scan-entry/scan-entry';
 
@@ -15,16 +15,13 @@ import { ScanEntry } from '../../components/scan-entry/scan-entry';
 export class Dashboard {
   private scanService = inject(ScanService);
 
-  // We fetch the data directly
-  scans$ = this.scanService.getRecentScans();
-
-  // We calculate stats "reactively" (automatically updates when data changes)
-  stats$ = this.scans$.pipe(
-    map(scans => {
-      const total = scans.length;
-      const critical = scans.filter(s => s.status === 'CRITICAL').length;
-      const safe = scans.filter(s => s.status === 'SAFE').length;
-      return { total, critical, safe };
-    })
+  dashboardData$ = this.scanService.getDashboardOverview().pipe(
+    shareReplay(1) 
   );
+
+  // 2. Extract the stats for the top cards
+  stats$ = this.dashboardData$.pipe(map(data => data.stats));
+
+  // 3. Extract the recent scans for the list
+  scans$ = this.dashboardData$.pipe(map(data => data.recentScans));
 }

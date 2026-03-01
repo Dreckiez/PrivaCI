@@ -1,4 +1,4 @@
-<a [routerLink]="['/repo', scan.repoName]" [queryParams]="{ branch: scan.branch }" class="grid grid-cols-12 gap-4 p-4 border-b border-[#2f3136] hover:bg-[#2f3136]/60 transition-colors items-center group cursor-pointer">
+<a [routerLink]="['/repo', scan.id]" [queryParams]="{ branch: scan.branch }" class="grid grid-cols-12 gap-4 p-4 border-b border-[#2f3136] hover:bg-[#2f3136]/60 transition-colors items-center group cursor-pointer">
     <div class="col-span-4 pl-2">
         <div class="font-bold transition-colors"
             [class.text-blue-300]="scan.status === 'SAFE' || scan.status === 'WARNING'"
