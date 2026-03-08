@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SettingService } from '../../services/setting.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-settings',
@@ -14,7 +15,7 @@ import { SettingService } from '../../services/setting.service';
 export class Settings {
   authService = inject(AuthService);
   settingsService = inject(SettingService);
-
+  toastService = inject(ToastService);
   cdr = inject(ChangeDetectorRef);
 
   showDeleteModal = false;
@@ -25,23 +26,8 @@ export class Settings {
   newRule = { name: '', regex: '', severity: 'WARNING' };
   isSavingRule = false;
 
-  toast = { visible: false, message: '', type: 'error' };
-  toastTimeout: any;
-
   ngOnInit() {
     this.fetchRules();
-  }
-
-  showToast(message: string, type: 'error' | 'success' | 'warning' = 'error') {
-    this.toast = { visible: true, message, type };
-    this.cdr.detectChanges();
-
-    if (this.toastTimeout) clearTimeout(this.toastTimeout);
-    
-    this.toastTimeout = setTimeout(() => {
-      this.toast.visible = false;
-      this.cdr.detectChanges();
-    }, 3000);
   }
 
   async fetchRules() {
@@ -59,7 +45,7 @@ export class Settings {
     try {
       new RegExp(this.newRule.regex);
     } catch (e) {
-      this.showToast("Invalid Regex Syntax. Please check again.", "error");
+      this.toastService.show("Invalid Regex Syntax. Please check again.", "error");
       return; // Stop the execution here!
     }
     
@@ -71,7 +57,7 @@ export class Settings {
 
       this.cdr.detectChanges();
     } catch (err) {
-      alert("Failed to save rule. Check regex format.");
+      this.toastService.show("Failed to save rule. Please try again.", "error");
     } finally {
       this.isSavingRule = false;
     }
