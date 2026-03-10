@@ -7,6 +7,7 @@ import { BranchSelector } from '../../components/branch-selector/branch-selector
 import { combineLatest, firstValueFrom } from 'rxjs';
 import { RepoDetailsData } from '../../models/repo.model';
 import { RepoService } from '../../services/repo.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-repo-details',
@@ -18,6 +19,7 @@ export class RepoDetails {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private repoService = inject(RepoService);
+  private toastService = inject(ToastService);
 
   private cdr = inject(ChangeDetectorRef);
 
@@ -63,7 +65,7 @@ export class RepoDetails {
 
       this.data = response.data;
     } catch (error) {
-      
+      this.toastService.show("Failed to load repository details.", "error");
     } finally {
       this.isLoading = false;
       this.cdr.detectChanges();
@@ -83,14 +85,14 @@ export class RepoDetails {
     if (!id || this.isScanning) return;
     
     this.isScanning = true;
-    this.cdr.detectChanges(); // Force UI to show loading spinner immediately
+    this.cdr.detectChanges();
     
     try {
       await firstValueFrom(this.repoService.scanAll(id));
-      // Refresh the UI with the newly generated scan data
       await this.fetchRepoDetails(id, this.data?.selectedBranch || 'main');
+      this.toastService.show("Successfully scanned all branches.", "success");
     } catch (error) {
-      console.error("Scan All Error:", error);
+      this.toastService.show("Scan failed. The repository might be too large and timed out.", "error");
     } finally {
       this.isScanning = false;
       this.cdr.detectChanges();
@@ -108,8 +110,9 @@ export class RepoDetails {
     try {
       await firstValueFrom(this.repoService.scanBranch(id, branch));
       await this.fetchRepoDetails(id, branch);
+      this.toastService.show(`Successfully scanned branch: ${branch}`, "success");
     } catch (error) {
-      console.error("Scan Branch Error:", error);
+      this.toastService.show("Scan failed. The branch might be too large and timed out.", "error");
     } finally {
       this.isScanning = false;
       this.cdr.detectChanges();

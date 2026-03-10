@@ -35,7 +35,7 @@ export class Settings {
       this.customRules = await this.settingsService.getCustomRules();
       this.cdr.detectChanges();
     } catch (err) {
-      console.error("Failed to load rules", err);
+      this.toastService.show("Failed to load custom rules.", "error");
     }
   }
 
@@ -56,6 +56,7 @@ export class Settings {
       this.newRule = { name: '', regex: '', severity: 'WARNING' };
 
       this.cdr.detectChanges();
+      this.toastService.show("Custom rule added successfully.", "success");
     } catch (err) {
       this.toastService.show("Failed to save rule. Please try again.", "error");
     } finally {
@@ -69,8 +70,9 @@ export class Settings {
       this.customRules = this.customRules.filter(r => r.id !== id);
 
       this.cdr.detectChanges();
+      this.toastService.show("Rule deleted successfully.", "success");
     } catch (err) {
-      console.error("Failed to delete rule", err);
+      this.toastService.show("Failed to delete rule. Please try again.", "error");
     }
   }
 
@@ -94,8 +96,7 @@ export class Settings {
       // Redirect to login to force session clear
       window.location.href = '/login'; 
     } catch (err) {
-      console.error("Delete failed", err);
-      alert("System Error: Could not purge account.");
+      this.toastService.show("System Error: Could not purge account.", "error");
       this.isDeleting = false;
       this.closeDeleteModal();
     }

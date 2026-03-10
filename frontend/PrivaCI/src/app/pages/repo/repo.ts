@@ -2,8 +2,9 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Repository } from '../../models/repo.model';
-import { BehaviorSubject, firstValueFrom, map, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, catchError, firstValueFrom, map, Observable, of, switchMap, tap } from 'rxjs';
 import { RepoService } from '../../services/repo.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-repo',
@@ -13,6 +14,7 @@ import { RepoService } from '../../services/repo.service';
 })
 export class Repo {
   private repoService = inject(RepoService);
+  private toastService = inject(ToastService);
   private pageSubject = new BehaviorSubject<number>(1);
 
   limit = 9;
@@ -29,7 +31,12 @@ export class Repo {
   ngOnInit() {
     this.repos$ = this.pageSubject.pipe(
       switchMap(page =>
-        this.repoService.getRepos(page, this.limit)
+        this.repoService.getRepos(page, this.limit).pipe(
+          catchError(err => {
+            this.toastService.show('Failed to load repositories.', 'error');
+            return of({ data: [], pagination: {totalItems: 0, totalPages: 1}});
+          })
+        )
       ),
       tap(response => {
         this.totalItems = response.pagination.totalItems;
@@ -63,17 +70,17 @@ export class Repo {
   }
 
   async syncGitHub() {
-    if (this.isSyncing) return; // Prevent double clicks
+    if (this.isSyncing) return;
     
     this.isSyncing = true;
     
     try {
       await firstValueFrom(this.repoService.syncRepos());
-      
+      this.toastService.show("Successfully synced with GitHub.", "success");
       this.pageSubject.next(this.currentPage); 
       
     } catch (error) {
-      // console.error("Failed to sync with GitHub:", error);
+      this.toastService.show("Failed to sync with GitHub. Please try again.", "error");
     } finally {
       this.isSyncing = false;
     }
@@ -86,16 +93,15 @@ export class Repo {
 
     try {
       await firstValueFrom(this.repoService.scanAll(githubRepoId));
-      // Refresh the list to fetch the updated scan status and badges
+      this.toastService.show("Repository scan completed successfully.", "success");
       this.pageSubject.next(this.currentPage); 
     } catch (error) {
-      console.error("Baseline Scan Error:", error);
+      this.toastService.show("Scan failed. The repository might be too large and timed out.", "error");
     } finally {
       this.scanningStates[githubRepoId] = false;
     }
   }
 
-  // --- Actions ---
   nextPage() {
     const next = this.pageSubject.value + 1;
     if (next <= this.totalPages) {
