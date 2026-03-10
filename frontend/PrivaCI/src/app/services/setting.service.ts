@@ -26,4 +26,22 @@ export class SettingService {
       this.http.delete<void>(API_ENDPOINTS.setting.deleteCustomRules(id), { withCredentials: true })
     );
   }
+
+  async getIgnoreRules(): Promise<any[]> {
+    return await firstValueFrom(
+      this.http.get<any[]>(API_ENDPOINTS.setting.getIgnoreRules, { withCredentials: true })
+    );
+  }
+
+  async addIgnoreRule(rule: { path: string }): Promise<any> {
+    return await firstValueFrom(
+      this.http.post<any>(API_ENDPOINTS.setting.createIgnoreRules, rule, { withCredentials: true })
+    );
+  }
+
+  async deleteIgnoreRule(id: number): Promise<void> {
+    return await firstValueFrom(
+      this.http.delete<void>(API_ENDPOINTS.setting.deleteIgnoreRules(id), { withCredentials: true })
+    );
+  }
 }

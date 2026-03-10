@@ -98,15 +98,17 @@
                 </button>
             </div>
 
-            <div class="space-y-3">
-                <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 border-b border-[#2f3136] pb-2">Active Rules ({{ customRules.length }})</div>
+            <div class="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 border-b border-[#2f3136] pb-2 sticky top-0 bg-[#1e2124] z-10">
+                    Active Rules ({{ customRules.length }})
+                </div>
                 
                 @for (rule of customRules; track rule.id) {
                     <div class="flex items-center justify-between p-3 bg-[#151719] border border-[#2f3136] rounded group hover:border-gray-500 transition-colors">
                         <div class="flex items-center gap-4">
                             <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border shrink-0"
-                                  [class.bg-red-500/10]="rule.severity === 'CRITICAL'" [class.text-red-400]="rule.severity === 'CRITICAL'" [class.border-red-500/30]="rule.severity === 'CRITICAL'"
-                                  [class.bg-yellow-500/10]="rule.severity === 'WARNING'" [class.text-yellow-400]="rule.severity === 'WARNING'" [class.border-yellow-500/30]="rule.severity === 'WARNING'">
+                                    [class.bg-red-500/10]="rule.severity === 'CRITICAL'" [class.text-red-400]="rule.severity === 'CRITICAL'" [class.border-red-500/30]="rule.severity === 'CRITICAL'"
+                                    [class.bg-yellow-500/10]="rule.severity === 'WARNING'" [class.text-yellow-400]="rule.severity === 'WARNING'" [class.border-yellow-500/30]="rule.severity === 'WARNING'">
                                 {{ rule.severity }}
                             </span>
                             <div>
@@ -120,6 +122,58 @@
                     </div>
                 } @empty {
                     <div class="text-xs text-gray-600 italic py-4 text-center border border-dashed border-[#2f3136] rounded">No custom rules defined. Engine running on default settings.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-[#1e2124] border border-[#2f3136] rounded shadow-lg overflow-hidden mb-8">
+        <div class="bg-[#1a1c1e] px-6 py-4 border-b border-[#2f3136] flex items-center gap-3">
+            <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+            <h2 class="text-gray-300 font-bold tracking-wider uppercase text-xs">Global Ignore List</h2>
+        </div>
+        
+        <div class="p-6">
+            <p class="text-xs text-gray-500 mb-3">Define file paths, extensions, or directory names that the Gitleaks scanner should completely ignore.</p>
+
+            <div class="flex flex-col md:flex-row gap-3 mb-8 bg-[#151719] p-4 border border-[#2f3136] rounded items-stretch">
+                
+                <input type="text" [(ngModel)]="newIgnore.value" 
+                       placeholder="e.g., node_modules, package-lock.json, or .md" 
+                       class="flex-1 bg-[#0d0e10] border border-[#2f3136] rounded px-3 py-2 text-xs text-gray-300 focus:outline-none focus:border-orange-500 font-mono">
+                
+                <select [(ngModel)]="newIgnore.type" 
+                        class="bg-[#0d0e10] border border-[#2f3136] rounded px-3 py-2 text-xs text-orange-400 focus:outline-none focus:border-orange-500 font-bold tracking-wider shrink-0 cursor-pointer">
+                    <option value="FOLDER">📁 FOLDER</option>
+                    <option value="FILE">📄 FILE</option>
+                    <option value="EXTENSION">🧩 EXTENSION</option>
+                </select>
+
+                <button (click)="addIgnoreRule()" [disabled]="!newIgnore.value || isSavingIgnoreRule"
+                        class="cursor-pointer px-4 py-2 bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white border border-orange-500/30 rounded text-xs transition-colors uppercase tracking-wider font-bold disabled:opacity-50 shrink-0">
+                    {{ isSavingIgnoreRule ? 'ADDING...' : '+ ADD PATH' }}
+                </button>
+            </div>
+
+            <div class="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 border-b border-[#2f3136] pb-2 sticky top-0 bg-[#1e2124] z-10">
+                    Ignored Paths ({{ ignoreRules.length }})
+                </div>
+                
+                @for (rule of ignoreRules; track rule.id) {
+                    <div class="flex items-center justify-between p-3 bg-[#151719] border border-[#2f3136] rounded group hover:border-gray-500 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border shrink-0 bg-gray-500/10 text-gray-400 border-gray-500/30">
+                                PATH
+                            </span>
+                            <div class="text-xs text-orange-400 font-mono mt-0.5">{{ rule.pattern }}</div>
+                        </div>
+                        <button (click)="removeIgnoreRule(rule.id)" class="cursor-pointer text-gray-600 hover:text-red-400 focus:outline-none p-2 transition-colors" title="Delete Rule">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                } @empty {
+                    <div class="text-xs text-gray-600 italic py-4 text-center border border-dashed border-[#2f3136] rounded">No ignore paths defined.</div>
                 }
             </div>
         </div>

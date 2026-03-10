@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SettingService } from '../../services/setting.service';
 import { ToastService } from '../../services/toast.service';
@@ -26,8 +25,32 @@ export class Settings {
   newRule = { name: '', regex: '', severity: 'WARNING' };
   isSavingRule = false;
 
+  newIgnore = { value: '', type: 'FOLDER' };
+  ignoreRules: any[] = [];
+  isSavingIgnoreRule = false;
+
+  private generateIgnoreRegex(value: string, type: string): string {
+    const escapedValue = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    switch (type) {
+      case 'FOLDER':
+        return `(?:^|.*/)${escapedValue}/.*`;
+      
+      case 'FILE':
+        return `(?:^|.*/)${escapedValue}$`;
+      
+      case 'EXTENSION':
+        const ext = escapedValue.startsWith('\\.') ? escapedValue : `\\.${escapedValue}`;
+        return `.*${ext}$`;
+      
+      default:
+        return escapedValue;
+    }
+  }
+
   ngOnInit() {
     this.fetchRules();
+    this.fetchIgnoreRules();
   }
 
   async fetchRules() {
@@ -39,6 +62,15 @@ export class Settings {
     }
   }
 
+  async fetchIgnoreRules() {
+    try {
+      this.ignoreRules = await this.settingsService.getIgnoreRules();
+      this.cdr.detectChanges();
+    } catch (err) {
+      this.toastService.show("Failed to load ignore list.", "error");
+    }
+  }
+
   async addRule() {
     if (!this.newRule.name || !this.newRule.regex) return;
     
@@ -46,7 +78,7 @@ export class Settings {
       new RegExp(this.newRule.regex);
     } catch (e) {
       this.toastService.show("Invalid Regex Syntax. Please check again.", "error");
-      return; // Stop the execution here!
+      return;
     }
     
     this.isSavingRule = true;
@@ -64,6 +96,27 @@ export class Settings {
     }
   }
 
+  async addIgnoreRule() {
+    if (!this.newIgnore.value.trim()) return;
+
+    const generatedRegex = this.generateIgnoreRegex(this.newIgnore.value.trim(), this.newIgnore.type);
+    this.isSavingIgnoreRule = true;
+
+    try {
+      const addedRule = await this.settingsService.addIgnoreRule({ path: generatedRegex });
+      this.ignoreRules.unshift(addedRule);
+      
+      this.newIgnore = { value: '', type: 'FOLDER' };
+      
+      this.cdr.detectChanges();
+      this.toastService.show("Ignore path added successfully.", "success");
+    } catch (e) {
+      this.toastService.show("Failed to save ignore path.", "error");
+    } finally {
+      this.isSavingIgnoreRule = false;
+    }
+  }
+
   async removeRule(id: number) {
     try {
       await this.settingsService.deleteCustomRule(id);
@@ -73,6 +126,18 @@ export class Settings {
       this.toastService.show("Rule deleted successfully.", "success");
     } catch (err) {
       this.toastService.show("Failed to delete rule. Please try again.", "error");
+    }
+  }
+
+  async removeIgnoreRule(id: number) {
+    try {
+      await this.settingsService.deleteIgnoreRule(id);
+      this.ignoreRules = this.ignoreRules.filter(r => r.id !== id);
+
+      this.cdr.detectChanges();
+      this.toastService.show("Ignore path deleted successfully.", "success");
+    } catch (err) {
+      this.toastService.show("Failed to delete ignore path. Please try again.", "error");
     }
   }
 
@@ -93,8 +158,7 @@ export class Settings {
     this.isDeleting = true;
     try {
       await this.authService.deleteAccount();
-      // Redirect to login to force session clear
-      window.location.href = '/login'; 
+      window.location.href = '/login';
     } catch (err) {
       this.toastService.show("System Error: Could not purge account.", "error");
       this.isDeleting = false;

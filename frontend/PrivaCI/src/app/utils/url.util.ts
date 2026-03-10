@@ -4,7 +4,10 @@ export const API_ENDPOINTS = {
     setting: {
         getCustomRules: `${API_BASE}/settings/custom-rules`,
         createCustomRules: `${API_BASE}/settings/custom-rules`,
-        deleteCustomRules: (id: number) => `${API_BASE}/settings/custom-rules/${id}`
+        deleteCustomRules: (id: number) => `${API_BASE}/settings/custom-rules/${id}`,
+        getIgnoreRules: `${API_BASE}/settings/ignore-rules`,
+        createIgnoreRules: `${API_BASE}/settings/ignore-rules`,
+        deleteIgnoreRules: (id: number) => `${API_BASE}/settings/ignore-rules/${id}`
     },
     scan: {
         getScan: `${API_BASE}/scan`,

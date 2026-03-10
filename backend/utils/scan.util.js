@@ -242,8 +242,6 @@ export const executeBranchScan = async (repo, branch, userId) => {
             tempDir
         ];
 
-        console.log("Before git clone");
-
         try {
             await execFilePromise('git', cloneArgs, {
                 timeout: 300000,
@@ -287,7 +285,7 @@ export const executeBranchScan = async (repo, branch, userId) => {
             });
         }
 
-        console.log(tomlContent);
+        // console.log(tomlContent);
 
         const customConfigPath = path.join(tempDir, 'custom-rules.toml');
         const customReportPath = path.join(tempDir, 'custom-report.json');
