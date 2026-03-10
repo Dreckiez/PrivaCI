@@ -5,7 +5,7 @@ import path from "path";
 import os from "os";
 import { decryptToken } from "../utils/auth.util.js";
 import { pool } from "../libs/db.js";
-import { BASE_TOML } from "./rule.util.js";
+import { generateBaseToml } from "./rule.util.js";
 
 const execFilePromise = util.promisify(execFile);
 
@@ -74,8 +74,11 @@ export const executeBaselineScan = async (repo, branches, userId) => {
             throw safeError;
         }
 
-        // Prepare Custom Rules ONCE for the entire batch
-        let tomlContent = BASE_TOML;
+        const ignoreRes = await pool.query('SELECT pattern FROM ignore_rules WHERE user_id = $1', [userId]);
+        const customIgnorePaths = ignoreRes.rows.map(r => r.pattern);
+
+        let tomlContent = generateBaseToml(customIgnorePaths);
+
         const rulesRes = await pool.query('SELECT * FROM custom_rules WHERE user_id = $1', [userId]);
         if (rulesRes.rowCount > 0) {
             rulesRes.rows.forEach(rule => {
@@ -272,8 +275,11 @@ export const executeBranchScan = async (repo, branch, userId) => {
             allRawFindings.push(...defaultReport.map(f => ({ ...f, _source: 'DEFAULT' })));
         }
 
-        // SCAN 2: PII & Custom Rules
-        let tomlContent = BASE_TOML;
+        const ignoreRes = await pool.query('SELECT pattern FROM ignore_rules WHERE user_id = $1', [userId]);
+        const customIgnorePaths = ignoreRes.rows.map(r => r.pattern);
+
+        let tomlContent = generateBaseToml(customIgnorePaths);
+        
         const rulesRes = await pool.query('SELECT * FROM custom_rules WHERE user_id = $1', [userId]);
         if (rulesRes.rowCount > 0) {
             rulesRes.rows.forEach(rule => {
