@@ -25,6 +25,7 @@ PrivaCI acts as an asynchronous, non-blocking CI/CD security gate. It integrates
 
 **Security & Scanning:**
 * **Gitleaks (v8.18):** Core SAST engine.
+* **Docker & Docker Compose:** Orchestration and multi-stage builds.
 
 ## ⚙️ Core Architecture Flow
 
@@ -36,15 +37,7 @@ PrivaCI acts as an asynchronous, non-blocking CI/CD security gate. It integrates
 
 ## 💻 Local Development Setup
 
-### Prerequisites
-* [Node.js](https://nodejs.org/) (v22+)
-* [PostgreSQL](https://www.postgresql.org/) (Running locally)
-* [Gitleaks](https://github.com/gitleaks/gitleaks) (Must be installed and available in your system PATH)
-
-### 1. Database Configuration
-Create a new PostgreSQL database and run the provided `SCRIPT.sql` file to generate the schema.
-
-### 2. Setting up GitHub OAuth (Required)
+### Setting up GitHub OAuth (Required)
 Because this application uses secure OAuth, you must create your own GitHub OAuth App to run it locally or deploy it.
 
 1. Go to your GitHub account: **Settings > Developer Settings > OAuth Apps**.
@@ -55,7 +48,58 @@ Because this application uses secure OAuth, you must create your own GitHub OAut
 4. Click **Register application**.
 5. Copy the **Client ID** and generate a new **Client Secret** to paste into your `.env` file.
 
-### 3. Environment Variables
+## **Docker**
+### Prerequisites
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine
+* [Git](https://git-scm.com/install/windows)
+
+### 1. Environment Variables
+Create a `.env` file in your `backend` directory:
+```env
+PORT=3000
+FRONTEND_URL=http://localhost:4200
+DATABASE_URL=postgresql://postgres:super_secret_password@db:5432/privaci
+
+SESSION_SECRET=64_byte_hex_string
+ENCRYPTION_KEY=32_byte_hex_string
+
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+```
+
+### 2. Start the Backend Server
+Open a terminal at the root of the `PrivaCI` repository and run:
+
+```Bash
+docker compose up --build
+```
+
+Docker will automatically:
+
+- Initialize the PostgreSQL database and run the schema setup script.
+
+- Inject the official Gitleaks binary into the Node.js backend.
+
+- Start the backend server on port `3000`.
+
+- Compile and serve the Angular frontend on port `4200`.
+
+(Wait until you see the `DB ready` and Angular compilation success messages in your terminal logs).
+
+### 3. Access the Dashboard
+
+Navigate to http://localhost:4200 in your browser to access the PrivaCI terminal and log in with GitHub.
+
+## **Local**
+### Prerequisites
+* [Node.js](https://nodejs.org/) (v22+)
+* [PostgreSQL](https://www.postgresql.org/) (Running locally)
+* [Gitleaks](https://github.com/gitleaks/gitleaks) (Must be installed and available in your system PATH)
+
+### 1. Database Configuration
+Create a new PostgreSQL database and run the provided `SCRIPT.sql` file to generate the schema.
+
+### 2. Environment Variables
 Create a `.env` file in your `backend` directory:
 ```env
 PORT=3000
@@ -69,7 +113,7 @@ GITHUB_CLIENT_ID=your_github_client_id
 GITHUB_CLIENT_SECRET=your_github_client_secret
 ```
 
-### 4. Start the Backend Server
+### 3. Start the Backend Server
 Open a terminal and navigate to the backend folder:
 
 ```Bash
@@ -79,7 +123,7 @@ npm run dev
 ```
 (Ensure you see 🟢 DB ready and the server running confirmation in the console.)
 
-### 5. Start the Frontend Application
+### 4. Start the Frontend Application
 Open a new terminal window and navigate to the frontend folder:
 
 ```Bash
